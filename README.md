@@ -22,6 +22,8 @@ go run ./cmd/normalize examples/normalize.json    # 单位价值归一化
 go run ./cmd/numgen examples/plan.json            # 生成战斗/成长/商业化数值
 go run ./cmd/numgen -formula 'base*1.2^level' examples/plan.json  # 指数公式守卫
 go run ./cmd/econcheck examples/econ.json         # source/sink 平衡 (~1)
+go run ./cmd/judge -values examples/gacha.json    # 给 AI 的版本判断包
+go run ./cmd/htmlreport examples/report.json dashboard.html  # 老板版 HTML 仪表盘
 go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
 ```
 
@@ -60,8 +62,11 @@ go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
 | `normalize` | 单位价值账本；精确换算与传递换算 |
 | `ingest` | 流式扫描 100 万 `.xlsx/.json/.jsonl/.csv/.tsv`（仅标准库） |
 | `design` | 加法优先的战斗/成长/商业化曲线 + 爆炸校验 |
+| `report` / `cmd/htmlreport` | 面向老板的**自包含 HTML 仪表盘**（内联 CSS+SVG，可离线/邮件） |
+| `cmd/judge` | 给 AI 的版本判断包：精确偏差 + 配表异常 + 可复制 prompt |
 | `cmd/opsreport` / `cmd/normalize` / `cmd/numgen` / `cmd/econcheck` / `cmd/ingest` | 对应 CLI（健康报告 / 归一化 / 数值生成 / 经济平衡 / 配表摄取） |
 | `design.RejectGlobalExponent` | 拒绝任何全局指数公式（即使加了 cap） |
+| `docs-site/` 的 React Flow 页 | 价值流动图 + 系统关系图（可拖拽/缩放，给非数值读者） |
 
 ## 让 Agent 设计全部数值
 

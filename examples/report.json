@@ -1,0 +1,39 @@
+{
+  "title": "版本数值健康报告",
+  "subtitle": "Gacha 3 月版本 · 面向管理层与策划",
+  "genre": "gacha",
+  "baseUnit": "金币",
+  "values": {
+    "retention_d1": "0.44",
+    "retention_d7": "0.19",
+    "retention_d30": "0.09",
+    "economy_source_sink_ratio": "1.05",
+    "economy_inflation": "1.02",
+    "monetization_pay_rate": "0.055",
+    "monetization_arpu": "1.20",
+    "monetization_ltv": "9",
+    "progression_pace": "1.10",
+    "content_cadence_days": "14",
+    "content_debt_ratio": "1.15"
+  },
+  "rates": [
+    { "from": "钻石", "to": "金币", "value": "10" },
+    { "from": "体力", "to": "金币", "value": "2" }
+  ],
+  "conversions": [
+    { "label": "每日奖励", "from": "钻石", "amount": "3" },
+    { "label": "体力补充", "from": "体力", "amount": "5" }
+  ],
+  "sources": { "每日任务": "100", "主线关卡": "50" },
+  "sinks": { "升级消耗": "120", "入场券": "20" },
+  "levels": 20,
+  "plan": {
+    "name": "样例成长计划",
+    "growth":      { "name": "growth",      "base": "100", "step": "25", "cap": "10000" },
+    "combatPower": { "name": "combatPower", "base": "10",  "step": "3",  "cap": "0" },
+    "damage":      { "name": "damage",      "base": "5",   "step": "2",  "cap": "0" },
+    "hp":          { "name": "hp",          "base": "50",  "step": "12", "cap": "0" },
+    "reward":      { "name": "reward",      "base": "20",  "step": "4",  "cap": "0" },
+    "price":       { "name": "price",       "base": "6",   "step": "1",  "cap": "648" }
+  }
+}

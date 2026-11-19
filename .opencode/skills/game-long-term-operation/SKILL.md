@@ -131,8 +131,26 @@ go run ./cmd/ingest -roots ./Config,./Tables -max 1000000 -workers 16 > stats.js
 
 Give the agent: (1) the design plan, (2) `stats.json` observed distributions,
 (3) the health report. Ask it to judge the current build and propose concrete
-config edits, then re-run validation. It owns every number. Workflow + prompt:
+config edits, then re-run validation. It owns every number. Assemble the packet
+with `go run ./cmd/judge -values examples/gacha.json -base 金币` (exact top
+deviations, config outliers, copyable AI prompt). Workflow + prompt:
 `references/ai-design-workflow.md`.
+
+## Executive HTML dashboard (for bosses / non-numerical readers)
+
+Generate a self-contained HTML file (inline CSS + SVG, no external assets —
+safe to email or open offline) that explains the same exact analysis in plain
+language: big health gauge, five pillar cards, traffic-light metric table,
+a "where the money flows" diagram, an additive-vs-multiplicative chart, and a
+"three decisions for the boss" list.
+
+```sh
+go run ./cmd/htmlreport examples/report.json report.html
+```
+
+Spec = genre + string values + optional base unit, rates, economy sources/sinks
+and design plan. See `examples/report.json`. When presenting to non-experts,
+use this dashboard instead of raw tables; never show float math as "precise".
 
 ## Flow (心流) analysis with codegraph233 — optional, slower, NOT tested here
 

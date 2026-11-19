@@ -36,6 +36,19 @@ numerical-design system:
   explicitly excluded from this repo's verification.
 - Docs site lives at `docs-site/` inside the same repo (so "clone → README → use").
 
+## Final additions: executive communication
+
+- `report` + `cmd/htmlreport`: self-contained HTML dashboard (inline CSS/SVG,
+  offline/email-safe) translating exact analysis into boss-friendly visuals:
+  health gauge, five pillar cards, traffic-light table, money-flow diagram,
+  additive-vs-multiplicative chart, three decisions list. `examples/dashboard.html`
+  is a committed generated artifact.
+- `cmd/judge`: assembles an AI-ready packet (exact top deviations, config
+  outliers from `ingest` stats, copyable prompt) so "AI judges the build" is
+  executable, not just advice.
+- `docs-site` React Flow pages: interactive 价值流动图 and 系统关系图 with an
+  additive-vs-multiplicative toggle, for non-numerical readers.
+
 ## Verification plan
 
 - Go: `gofmt`, `go vet ./...`, `CGO_ENABLED=0 go build ./...`, `go test -count=1 ./...`,

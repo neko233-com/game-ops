@@ -3,6 +3,8 @@ import { overview } from "./overview";
 import { oneness } from "./oneness";
 import { normalization } from "./normalization";
 import { additiveFirst } from "./additive-first";
+import { valueFlow } from "./value-flow";
+import { systemMap } from "./system-map";
 import { pillars } from "./pillars";
 import { numbers } from "./numbers";
 import { aiNumbers } from "./ai-numbers";
@@ -14,6 +16,8 @@ export const pages: DocPage[] = [
   oneness,
   normalization,
   additiveFirst,
+  valueFlow,
+  systemMap,
   pillars,
   numbers,
   aiNumbers,
@@ -22,7 +26,7 @@ export const pages: DocPage[] = [
 ];
 
 /** 侧边栏分组顺序。未在列表里的分组按出现顺序排在末尾。 */
-export const sectionOrder = ["开始", "地基", "运营", "设计", "AI", "安装"];
+export const sectionOrder = ["开始", "地基", "图解", "运营", "设计", "AI", "安装"];
 
 export function groupedPages(): Array<{ section: string; pages: DocPage[] }> {
   const groups = new Map<string, DocPage[]>();

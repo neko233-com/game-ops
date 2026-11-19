@@ -16,9 +16,13 @@ export type Block =
   | { type: "callout"; tone: Tone; title: string; text: string }
   | { type: "formula"; expression: string; note?: string }
   | { type: "steps"; items: Array<{ title: string; text: string }> }
-  | { type: "quote"; text: string; attribution?: string };
+  | { type: "quote"; text: string; attribution?: string }
+  | { type: "flow"; diagram: FlowDiagram };
 
 export type Tone = "note" | "tip" | "warn" | "danger";
+
+/** 交互式图解的类型：由 src/flow/FlowDiagrams.tsx 渲染。 */
+export type FlowDiagram = "value-flow" | "system-map";
 
 export interface DocPage {
   /** URL hash 用的稳定 id，例如 #/overview */
@@ -73,3 +77,4 @@ export const quote = (text: string, attribution?: string): Block => ({
   text,
   attribution,
 });
+export const flow = (diagram: FlowDiagram): Block => ({ type: "flow", diagram });

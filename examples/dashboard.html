@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>版本数值健康报告</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#f4f6fa;color:#1c2430}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+header{border-left:6px solid #3b6ef5;padding-left:16px;margin-bottom:24px}
+header h1{margin:0;font-size:26px}header p{margin:6px 0 0;color:#667085}
+.hero{display:flex;gap:28px;align-items:center;background:#fff;border-radius:16px;padding:26px;box-shadow:0 4px 18px #1c24300d}
+.gauge{position:relative;width:140px;height:140px;flex:none}.gauge svg{transform:rotate(-90deg)}
+.gauge .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}
+.badge{display:inline-block;padding:5px 14px;border-radius:999px;font-weight:700;font-size:14px}
+.good{background:#e7f8ee;color:#0a7a3d}.warn{background:#fff4de;color:#9a6700}.bad{background:#ffe8e6;color:#b42318}
+.hero h2{margin:12px 0 6px;font-size:22px}.hero p{margin:0;color:#475467;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px #1c24300a}
+.card h3{margin:0 0 6px;font-size:15px}.card p{margin:0;color:#475467;font-size:14px;line-height:1.6}
+.num{font-size:26px;font-weight:800;color:#3b6ef5;margin:6px 0}
+section{margin-top:26px}section>h2{font-size:19px;margin:0 0 12px}
+.pillars{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.pillar{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:0 2px 10px #1c24300a}
+.pillar .name{font-weight:700}.pillar .desc{font-size:12px;color:#667085;margin:4px 0 10px}
+.bar{height:9px;background:#eef1f6;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#3b6ef5,#54b9f8)}
+.pillar .st{font-size:12px;margin-top:8px;color:#0a7a3d}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px #1c24300a}
+th,td{padding:10px 12px;text-align:left;font-size:14px;border-bottom:1px solid #eef1f6}th{background:#f9fafb;color:#475467}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.ok{background:#12b76a}.w2{background:#f79009}.c{background:#f04438}
+.flow{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 10px #1c24300a}
+.box{flex:1;background:#f8faff;border:2px solid #d5e2ff;border-radius:12px;padding:14px;text-align:center}
+.box b{font-size:16px}.box small{display:block;color:#667085;margin-top:6px}
+.arrow{font-size:26px;color:#3b6ef5}.flownote{margin-top:12px;font-size:14px;color:#475467}
+ol{background:#fff;border-radius:12px;padding:18px 18px 18px 40px;box-shadow:0 2px 10px #1c24300a}
+li{margin:8px 0;line-height:1.6}
+footer{margin-top:30px;color:#98a2b3;font-size:12px;text-align:center}
+@media(max-width:760px){.grid,.pillars{grid-template-columns:1fr 1fr}.hero{flex-direction:column}.flow{flex-direction:column}}
+</style></head><body><div class="wrap">
+<header><h1>版本数值健康报告</h1><p>Gacha 3 月版本 · 面向管理层与策划 · 品类：Gacha Collection（gacha） · 生成于 2026-11-19 23:32</p></header>
+<div class="hero">
+ <div class="gauge"><svg width="140" height="140" viewBox="0 0 140 140">
+  <circle cx="70" cy="70" r="54" fill="none" stroke="#eef1f6" stroke-width="14"/>
+  <circle cx="70" cy="70" r="54" fill="none" stroke="#3b6ef5" stroke-width="14" stroke-linecap="round" stroke-dasharray="304.46 34.83"/>
+ </svg><div class="val">0.89 / 1.00</div></div>
+ <div><span class="badge good">健康</span><h2>整体数值健康，可以继续按当前节奏运营。</h2>
+ <p>健康度是把留存、经济、商业化、成长、内容五类指标按重要性加权得到的 0–1 分数。越接近 1.00 越健康。</p></div>
+</div>
+<div class="grid">
+ <div class="card"><p>价值标尺：所有奖励和价格都换算成「金币」再比较，就像所有货币先换成人民币。</p></div><div class="card"><p>经济流动：钱从哪里来、到哪里去；产出与消耗的平衡比率是 1.07（1.00 最理想）。</p></div><div class="card"><p>价值节奏：成长和内容更新要保持平稳的线性节奏，避免乘法叠加造成数值膨胀。</p></div>
+</div>
+<section><h2>五大支柱体检</h2><div class="pillars">
+ <div class="pillar"><div class="name">留存</div><div class="desc">玩家是否愿意回来</div>
+ <div class="bar"><i style="width:89.5%"></i></div><div class="st">良好 · 90%</div></div><div class="pillar"><div class="name">经济</div><div class="desc">货币是否平衡</div>
+ <div class="bar"><i style="width:88.9%"></i></div><div class="st">良好 · 89%</div></div><div class="pillar"><div class="name">商业化</div><div class="desc">收入是否健康</div>
+ <div class="bar"><i style="width:91.2%"></i></div><div class="st">良好 · 91%</div></div><div class="pillar"><div class="name">成长</div><div class="desc">推进速度是否合理</div>
+ <div class="bar"><i style="width:80.0%"></i></div><div class="st">良好 · 80%</div></div><div class="pillar"><div class="name">内容</div><div class="desc">更新是否跟得上消耗</div>
+ <div class="bar"><i style="width:90.0%"></i></div><div class="st">良好 · 90%</div></div>
+</div></section>
+<section><h2>指标明细（从最需要关注的排起）</h2><table>
+<tr><th>指标</th><th>通俗解释</th><th>当前</th><th>目标</th><th>状态</th></tr>
+<tr><td><span class="dot ok"></span>content_debt_ratio</td>
+<td>内容积压程度，1 表示刚好</td><td>1.15</td><td>1</td><td>正常</td></tr><tr><td><span class="dot ok"></span>progression_pace</td>
+<td>玩家推进速度是否符合设计</td><td>1.1</td><td>1</td><td>正常</td></tr><tr><td><span class="dot ok"></span>monetization_arpu</td>
+<td>人均收入指数</td><td>1.2</td><td>1</td><td>正常</td></tr><tr><td><span class="dot ok"></span>retention_d1</td>
+<td>新玩家第二天还回来吗（越高越好）</td><td>0.44</td><td>0.4</td><td>正常</td></tr><tr><td><span class="dot ok"></span>economy_source_sink_ratio</td>
+<td>货币产出 ÷ 消耗，接近 1 最健康</td><td>1.05</td><td>1</td><td>正常</td></tr><tr><td><span class="dot ok"></span>retention_d30</td>
+<td>新玩家第三十天还回来吗（越高越好）</td><td>0.09</td><td>0.08</td><td>正常</td></tr><tr><td><span class="dot ok"></span>economy_inflation</td>
+<td>物价指数，1 表示稳定</td><td>1.02</td><td>1</td><td>正常</td></tr><tr><td><span class="dot ok"></span>monetization_ltv</td>
+<td>玩家终身价值指数</td><td>9</td><td>10</td><td>正常</td></tr><tr><td><span class="dot ok"></span>retention_d7</td>
+<td>新玩家第七天还回来吗（越高越好）</td><td>0.19</td><td>0.18</td><td>正常</td></tr><tr><td><span class="dot ok"></span>monetization_pay_rate</td>
+<td>付费玩家占比</td><td>0.055</td><td>0.06</td><td>正常</td></tr><tr><td><span class="dot ok"></span>content_cadence_days</td>
+<td>两次内容更新间隔天数</td><td>14</td><td>14</td><td>正常</td></tr>
+</table></section>
+<section><h2>钱是怎么流动的</h2><div class="flow">
+ <div class="box"><b>钱从哪里来</b><small>任务 / 关卡 / 充值<br>合计 150</small></div>
+ <div class="arrow">➜</div><div class="box"><b>玩家钱包</b><small>产出 ÷ 消耗 = 1.0714</small></div>
+ <div class="arrow">➜</div><div class="box"><b>钱花到哪里去</b><small>升级 / 抽卡 / 门票<br>合计 140</small></div>
+</div><p class="flownote"><b>平衡</b>：钱进来的速度约等于花出去的速度，经济稳定。</p></section>
+<section><h2>成长曲线：为什么用加法</h2><div class="card">
+<p>growth 曲线采用「起点 + 每级固定增量」的加法式，玩家每升一级得到的好处一样多，既好预测也好封顶。</p>
+<svg width="740" height="260" viewBox="0 0 740 260" role="img" aria-label="加法成长曲线">
+ <line x1="50" y1="230" x2="710" y2="230" stroke="#98a2b3"/><line x1="50" y1="40" x2="50" y2="230" stroke="#98a2b3"/>
+ <polyline points="50.0,197.0 84.7,188.7 119.5,180.4 154.2,172.2 188.9,163.9 223.7,155.7 258.4,147.4 293.2,139.1 327.9,130.9 362.6,122.6 397.4,114.3 432.1,106.1 466.8,97.8 501.6,89.6 536.3,81.3 571.1,73.0 605.8,64.8 640.5,56.5 675.3,48.3 710.0,40.0 " fill="none" stroke="#3b6ef5" stroke-width="3"/>
+ <text x="50" y="252" font-size="12" fill="#667085">等级 1</text><text x="660" y="252" font-size="12" fill="#667085">高等级</text>
+ <text x="60" y="32" font-size="13" fill="#3b6ef5">加法：平稳、可封顶</text>
+</svg>
+<p>如果用乘法（例如每级 ×1.1），第 40 级就会变成约 45 倍——数值膨胀会让老玩家碾压新玩家、经济失控。加法曲线避免这一点。</p>
+</div></section>
+<section><h2>老板需要决策的三件事</h2><ol><li>当前没有需要紧急决策的数值问题；保持现有内容节奏并按周期复盘即可。</li></ol></section>
+<footer>本报告由 game-ops 自动生成 · 所有数值以精确有理数计算 · 指标计算式：fitness = clamp(1 − |当前−目标| ÷ 容差带, 0, 1)</footer>
+</div></body></html>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { getPage, groupedPages, neighbours, pages } from "./content";
+import { FlowBlock } from "./flow/FlowDiagrams";
 import type { Block, DocPage, Tone } from "./types";
 
 const toneLabels: Record<Tone, string> = {
@@ -161,6 +162,8 @@ function BlockView({ block, index }: { block: Block; index: number }) {
           {block.attribution ? <cite>{renderInline(block.attribution)}</cite> : null}
         </blockquote>
       );
+    case "flow":
+      return <FlowBlock diagram={block.diagram} />;
   }
 }
 
