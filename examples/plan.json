@@ -1,0 +1,11 @@
+{
+  "name": "样例成长计划",
+  "growth":      { "name": "growth",      "base": "100", "step": "25", "cap": "10000" },
+  "combatPower": { "name": "combatPower", "base": "10",  "step": "3",  "cap": "0" },
+  "damage":      { "name": "damage",      "base": "5",   "step": "2",  "cap": "0" },
+  "hp":          { "name": "hp",          "base": "50",  "step": "12", "cap": "0" },
+  "reward":      { "name": "reward",      "base": "20",  "step": "4",  "cap": "0" },
+  "price":       { "name": "price",       "base": "6",   "step": "1",  "cap": "648" },
+  "levels": 30,
+  "maxGrowthRatio": "1.5"
+}

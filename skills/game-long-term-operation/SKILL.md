@@ -1,113 +1,194 @@
 ---
 name: game-long-term-operation
-description: Use when designing, auditing, balancing, or tuning long-term (live) game operations — 长线运营, retention, economy source/sink, inflation, monetization/LTV, progression pace, content cadence — for any game genre, or when numeric configs must support arbitrary-precision values (big.Rat, big.Int, fractions, huge numbers) and test content must never be pulled by collaborators. Provides the five-pillar metric taxonomy, a genre-agnostic lever model, exact-arithmetic rules, a health-scoring workflow, and a gitignore-based test-privacy recipe.
+description: Use when designing, auditing, balancing or monetizing long-term game operations (游戏长线运营) and ALL numerical design (数值) — unit value & normalization (归一化/单位价值), additive-first formulas (加法优先), combat/growth/monetization numbers, an agent designing every number, streaming analysis of 1,000,000 Excel/JSON/CSV config files, judging a build's numerical health, predicting game lifespan from numbers, and optional codegraph233 flow (心流) analysis. Genre-agnostic, exact math, project-first install for opencode/codex/dsh/claude.
 ---
 
-# Game Long-Term Operation (游戏长线运营)
+# Game Long-Term Operation & Numerical Design (游戏长线运营 / 数值)
 
-## Overview
+## The one principle (大道归一)
 
-Long-term operation is a **control loop**, not a content calendar. The same loop
-works for every genre because it runs on universal signals, not on genre-specific
-features. Core principle:
+> 数值的本质不是公式，而是**「价值的定义、流动与节奏」**。
+> Numbers are not formulas: they are the definition of value, the flow of value,
+> and the pacing of cost versus reward. Everything else is a special case.
 
-> Describe a game as observed values for a fixed set of universal metrics; score
-> them against a genre's target levers with exact arithmetic; act on the
-> worst deviations; repeat on a fixed cadence.
+Three questions reduce every numerical task:
 
-This skill is supported by a pure-Go engine (`num`, `genre`, `ops`, `formula`,
-`cmd/opsreport`). Use it directly when available; otherwise reproduce its model.
+1. **定义** — what is the base unit of value, and what is everything else worth in it?
+2. **流动** — where does value enter (source) and leave (sink)? Is the flow balanced?
+3. **节奏** — how fast is value produced, consumed and replaced over time?
 
-## The five pillars (eleven universal metrics)
+If you can answer these with exact numbers, you can design combat, growth and
+monetization with the same method, for any genre. Full essay: `references/unified-theory.md`.
 
-| Pillar | Metrics | What it answers |
-|---|---|---|
-| Retention | `retention_d1`, `retention_d7`, `retention_d30` | Do players come back? |
-| Economy | `economy_source_sink_ratio`, `economy_inflation` | Is currency balanced and non-inflationary? |
-| Monetization | `monetization_pay_rate`, `monetization_arpu`, `monetization_ltv` | Is revenue healthy and sustainable? |
-| Progression | `progression_pace` | Are players consuming content at the intended speed? |
-| Content cadence | `content_cadence_days`, `content_debt_ratio` | Is new content arriving faster than it is burned? |
+**Can game lifespan be judged from numbers?** Partly — numbers are a leading
+indicator, not a verdict. Retention decay, content burn-rate vs production-rate,
+economy entropy (inflation drift), and progression saturation predict trouble
+months early. They cannot measure fun, social glue or creativity. Report both
+the signal and its limit. See `references/unified-theory.md`.
 
-Full definitions and typical target bands: `references/metrics.md`.
+## The canonical loop (use this for every task)
 
-## The genre-agnostic method
+1. **Define value** — pick a base unit (often 1 minute of meaningful play, or
+   1 unit of premium currency). Convert every resource with exact rational rates.
+2. **Design additive-first** — every curve is `base + step * (level - 1)` with a
+   cap. Only introduce multiplication with a stated reason and a hard cap.
+3. **Validate** — check monotonicity, cap sanity, adjacent-level growth ratio,
+   source/sink balance. Reject explosions before shipping.
+4. **Ingest reality** — stream the project's config tables (up to 1,000,000
+   xlsx/json/csv files); compare observed distributions to the design.
+5. **Judge** — score the build with the 5-pillar health report; hand the AI the
+   report + the diffs; let the agent decide what to change.
+6. **Let the agent design** — the agent owns every number; it writes the configs,
+   runs the validator, and explains each choice in terms of value/flow/pacing.
 
-1. **Never hardcode a genre in the logic.** Logic reads metric keys only.
-2. Describe each genre as a set of **levers**: one per relevant metric, with
-   `Ideal`, `Min`, `Max` (the tolerance band) and `Weight` (importance). See
-   `references/genres.md` for the built-in coverage and how levers differ.
-3. Use the built-in registry when the genre is known; **register a new genre from
-   data** when it is not. "All genres" means an open registry, never a closed enum.
-4. An unknown genre is never a reason to invent new logic — add levers with the
-   same eleven keys and register it.
+## Unit value & normalization (归一化)
 
-## Arbitrary-precision rule
-
-- Use an exact rational type (`math/big.Rat` in Go, `BigInt` numerator/denominator
-  normalized by GCD elsewhere). **Do not roll your own** when a proven one exists;
-  **do not use float64 for config math** — `0.1 + 0.2` must be exactly `3/10`.
-- Store config values as **strings** (decimals, fractions like `1/3`, or scientific
-  notation). Parse to exact numbers at the boundary, never the reverse.
-- Convert to float **only** at the display/telemetry boundary.
-- Integer powers and ratios stay exact; `big.Rat` has no magnitude ceiling.
-- Keep numeric expressions data-driven: evaluate formulas over the exact type
-  (`formula.Eval("arpu * pay_rate", vars)`), never with host-language floats.
-
-## Validation workflow (the control loop)
-
-1. **Describe**: pick the genre (or register it), list its levers.
-2. **Observe**: build a snapshot — one exact value per lever key. A missing value
-   is an error, not a zero; silent zeros corrupt the score.
-3. **Score**: for each lever compute
-   `fitness = clamp(1 - |observed - ideal| / ((max - min)/2), 0, 1)`.
-   `Status` is `critical` outside `[min,max]`, `warn` below 0.6 fitness, else `ok`.
-   Overall `score` is the **weighted mean** of fitness — all exact arithmetic.
-4. **Judge**: `score >= 0.8` → `healthy`; `>= 0.6` → `attention`; else `critical`.
-5. **Act**: fix the worst `critical`/`warn` levers first (largest ideal deviation
-   weighted by importance), then re-snapshot on the genre's content cadence.
-
-In Go:
+Choose a base unit; define exact exchange rates; convert transitively. Never use
+float for rates. `1/3` stays `1/3`.
 
 ```go
-g := genre.MustGet("gacha") // or: genre.Register(myGenre); g := genre.MustGet(id)
-values := map[string]num.Num{
-    genre.MetricRetentionD1: num.MustFromString("0.44"), // string → exact
-    // ... one entry per lever in g.Levers
-}
-report, err := ops.Evaluate(ops.Snapshot{GenreID: g.ID, Values: values})
-// report.Score (exact num.Num), report.Verdict, report.Diagnostics
+l, _ := normalize.NewLedger("金币", []normalize.Unit{
+    {ID: "金币"}, {ID: "钻石"}, {ID: "体力"},
+}, []normalize.Rate{
+    {From: "钻石", To: "金币", Value: num.MustFromString("10")},
+    {From: "体力", To: "金币", Value: num.MustFromString("2")},
+})
+gold, _ := l.Normalize("钻石", num.MustFromString("3")) // 30 金币, exact
 ```
 
-End-to-end CLI: `go run ./cmd/opsreport examples/gacha.json` (JSON values are
-strings, so precision survives serialization).
+CLI: `go run ./cmd/normalize spec.json`. Depth: `references/normalization.md`.
 
-## Keeping test content private
+## Additive-first, not multiplicative (加法优先)
 
-Test content must never be pulled by other developers. Prefer the simplest
-mechanism that has **no external dependencies and no secrets**:
+- **Default:** `value(n) = base + step*(n-1)`, capped. Linear, predictable, easy to
+  rebalance, and the marginal cost of one more level is constant.
+- **Why not multiplication:** compounding creates 数值膨胀 / power creep, boundary
+  explosions, economy collapse via 复利, distorted probability expectations,
+  runaway pay-to-win gaps, and debugging nightmares.
+- **No global exponent, even if capped.** `base * 1.2^n` compounds long before the
+  cap; the player-visible curve is still explosive. Use piecewise additive bands.
+- **Multiplication is legitimate only when** it is a single controlled, capped
+  multiplier, or percentage modifiers are **summed additively in one bucket**
+  before one final multiply.
+- Enforce it: `go run ./cmd/numgen -formula 'base*1.2^level' plan.json` fails with
+  an explicit "global exponent is forbidden even with a cap" issue.
+- Industry pitfall table + exact rules: `references/unified-theory.md`.
 
-- Add to `.gitignore`: `*_test.go`, `/tests/`, `**/testdata/`, `*.test`,
-  `coverage.out`.
-- Keep all tests under `/tests/` as black-box tests of the public API (plus any
-  `*_test.go` anywhere is ignored). Run them locally with `go test ./...`.
-- Prove it: `git check-ignore -v tests/x_test.go` and `git status --ignored`.
-- Avoid heavier schemes (private repos, submodules, CI tokens) unless policy
-  requires them; they add secret-management burden and break contributor
-  reproducibility for no gain here.
+## Five pillars / eleven metrics (the health report)
+
+| Pillar | Metrics |
+|---|---|
+| Retention | `retention_d1`, `retention_d7`, `retention_d30` |
+| Economy | `economy_source_sink_ratio`, `economy_inflation` |
+| Monetization | `monetization_pay_rate`, `monetization_arpu`, `monetization_ltv` |
+| Progression | `progression_pace` |
+| Content cadence | `content_cadence_days`, `content_debt_ratio` |
+
+Fitness `= clamp(1 - |observed-ideal| / ((max-min)/2), 0, 1)`; status `critical`
+outside `[min,max]`, `warn` below `0.6`, else `ok`; score is the weighted mean;
+verdict `healthy >= 0.8`, `attention >= 0.6`, else `critical`. Full definitions:
+`references/metrics.md`. Genre coverage/levers: `references/genres.md`.
+
+CLI (values are strings in JSON, so precision survives — see `examples/gacha.json`):
+
+```sh
+go run ./cmd/opsreport examples/gacha.json     # score + verdict + diagnostics
+go run ./cmd/econcheck examples/econ.json      # source/sink balance (~1)
+```
+
+`econcheck` sums `sources` and `sinks` maps of string values and reports the exact
+ratio; >1.1 inflation, <0.9 scarcity, otherwise balanced. Specify every metric
+key of the genre's levers in `Values`; a missing key is an error, not zero.
+
+## Combat / growth / monetization numbers
+
+Model all three as additive curves with value budgets and caps:
+
+```go
+plan := design.Plan{
+    Growth:      design.AdditiveCurve("growth", "100", "25", "10000"),
+    CombatPower: design.AdditiveCurve("power", "10", "3", "0"),     // 0 = no cap
+    Damage:      design.AdditiveCurve("damage", "5", "2", "0"),
+    HP:          design.AdditiveCurve("hp", "50", "12", "0"),
+    Reward:      design.AdditiveCurve("reward", "20", "4", "0"),
+    Price:       design.AdditiveCurve("price", "6", "1", "648"),
+}
+issues := plan.Validate(num.MustFromString("1.5")) // adjacent-level ratio cap
+```
+
+CLI: `go run ./cmd/numgen plan.json`. Rules for budgets, cap placement, pay-rate
+discipline and why reward must never outgrow sink: `references/ai-design-workflow.md`.
+
+## Streaming 1,000,000 config files & AI judgment
+
+`ingest.Scan` walks roots with a bounded worker pool (never loads all files into
+memory), parsing .xlsx (stdlib zip+xml), .json/.jsonl, .csv and .tsv, aggregating
+exact per-column min/max/sum. Up to 1,000,000 files.
+
+```sh
+go run ./cmd/ingest -roots ./Config,./Tables -max 1000000 -workers 16 > stats.json
+```
+
+Give the agent: (1) the design plan, (2) `stats.json` observed distributions,
+(3) the health report. Ask it to judge the current build and propose concrete
+config edits, then re-run validation. It owns every number. Workflow + prompt:
+`references/ai-design-workflow.md`.
+
+## Flow (心流) analysis with codegraph233 — optional, slower, NOT tested here
+
+codegraph233 (`neko233-com/codegraph233`) is a Rust AST GraphRAG MCP server for
+game projects (code, prefab/scene/shader, config tables). To evaluate 心流, the
+agent should auto-provision it at PROJECT level on demand:
+
+```sh
+# script auto-downloads a PINNED release into <project>/.codegraph233/bin/
+scripts/codegraph-setup.ps1                    # or .sh on macOS/Linux
+# invoke the project-local binary explicitly (it is NOT added to PATH):
+.codegraph233/bin/codegraph233.exe init        # Windows
+.codegraph233/bin/codegraph233 init && codegraph233 index && codegraph233 status
+# then query via MCP (35 tools, auto-discovered): cg233_design_graph,
+# cg233_config_tables, cg233_call_graph, cg233_asset_tree
+```
+
+MCP wiring, version pinning and config schema: `references/ai-design-workflow.md`.
+
+Never block a numbers task on this; flow analysis takes much longer. Documented
+in `references/ai-design-workflow.md`. This integration is deliberately NOT
+verified in this repo's tests.
+
+## Install (opencode / codex / dsh / claude — project first)
+
+Copy this repo, then read the root `README.md`. One command installs the skill
+into every applicable runtime's **project** directory; if no project is detected
+it falls back to global. Use `-Scope all` to write both project and global:
+
+```sh
+scripts/install-skill.sh               # macOS/Linux (project)
+scripts/install-skill.ps1              # Windows (project)
+scripts/install-skill.ps1 -Scope global # global only
+scripts/install-skill.ps1 -Scope all    # project AND global
+```
+
+Details and manual paths: `references/installation.md`.
 
 ## Common mistakes
 
-| Mistake | Why it fails | Do this instead |
-|---|---|---|
-| Hardcoding genre names/branches in logic | Breaks for the next genre; not "all genres" | Generic keys + levers + open registry |
-| float64 money/rates | Rounding, overflow, `0.1+0.2 != 0.3` | Exact rational type, string configs |
-| Rolling a custom BigRational | Bugs in normalize/GCD/serialization | Use `math/big.Rat` / proven BigInt |
-| Treating missing metrics as 0 | Silently tanks the score | Error on missing lever keys |
-| Unweighted or unnormalized scoring | One bad metric dominates or score is meaningless | Bounded fitness + weighted mean |
-| Private test repo / CI secrets | Over-engineered, hurts reproducibility | `.gitignore` the test files |
-| Skipping the re-snapshot cadence | A one-off audit is not "operation" | Re-run on the content cadence |
+| Mistake | Fix |
+|---|---|
+| Multiplicative stacking everywhere | Additive first; one capped multiplier; sum % in one bucket |
+| float rates / rounding | Exact rational `num.Num`; string configs |
+| No base unit | Normalize everything to one value unit before comparing |
+| Missing metrics assumed zero | Error on missing values |
+| Closed genre enum | Levers + open `genre.Register` |
+| Hardcoded numbers in logic | Data-driven curves + validator; agent owns the numbers |
+| Loading all config files into RAM | Bounded streaming `ingest.Scan` |
+| Trusting numbers alone on lifespan | Report leading indicators + their limits |
 
 ## References
 
-- `references/metrics.md` — all eleven metrics, definitions, target bands, diagnostics.
-- `references/genres.md` — built-in genre coverage and lever overrides.
+- `references/unified-theory.md` — 大道归一, lifespan, additive-first, pitfalls
+- `references/normalization.md` — unit value, exchange rates
+- `references/ai-design-workflow.md` — agent designs all numbers, 1M files, codegraph233
+- `references/metrics.md` — eleven metrics
+- `references/genres.md` — genre coverage
+- `references/installation.md` — multi-runtime install

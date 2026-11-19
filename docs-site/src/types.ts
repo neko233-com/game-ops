@@ -1,0 +1,75 @@
+/**
+ * 内容块的数据模型。
+ *
+ * 所有页面正文都保存在 src/content/*.ts 里，App 只负责渲染这些块。
+ * 这样新增一页只需要写一个数据文件，不需要改组件。
+ */
+
+export type Block =
+  | { type: "p"; text: string }
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "ul"; items: string[] }
+  | { type: "ol"; items: string[] }
+  | { type: "code"; lang: string; source: string; caption?: string }
+  | { type: "table"; head: string[]; rows: string[][]; caption?: string }
+  | { type: "callout"; tone: Tone; title: string; text: string }
+  | { type: "formula"; expression: string; note?: string }
+  | { type: "steps"; items: Array<{ title: string; text: string }> }
+  | { type: "quote"; text: string; attribution?: string };
+
+export type Tone = "note" | "tip" | "warn" | "danger";
+
+export interface DocPage {
+  /** URL hash 用的稳定 id，例如 #/overview */
+  id: string;
+  /** 侧边栏显示的短标题 */
+  nav: string;
+  /** 正文大标题 */
+  title: string;
+  /** 标题下方的一句话摘要 */
+  subtitle: string;
+  /** 侧边栏分组名 */
+  section: string;
+  /** 预估阅读时间，仅用于展示 */
+  readingTime: string;
+  blocks: Block[];
+}
+
+export const p = (text: string): Block => ({ type: "p", text });
+export const h2 = (text: string): Block => ({ type: "h2", text });
+export const h3 = (text: string): Block => ({ type: "h3", text });
+export const ul = (...items: string[]): Block => ({ type: "ul", items });
+export const ol = (...items: string[]): Block => ({ type: "ol", items });
+export const code = (lang: string, source: string, caption?: string): Block => ({
+  type: "code",
+  lang,
+  source,
+  caption,
+});
+export const table = (head: string[], rows: string[][], caption?: string): Block => ({
+  type: "table",
+  head,
+  rows,
+  caption,
+});
+export const callout = (tone: Tone, title: string, text: string): Block => ({
+  type: "callout",
+  tone,
+  title,
+  text,
+});
+export const formula = (expression: string, note?: string): Block => ({
+  type: "formula",
+  expression,
+  note,
+});
+export const steps = (...items: Array<{ title: string; text: string }>): Block => ({
+  type: "steps",
+  items,
+});
+export const quote = (text: string, attribution?: string): Block => ({
+  type: "quote",
+  text,
+  attribution,
+});

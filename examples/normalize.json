@@ -1,0 +1,16 @@
+{
+  "base": "金币",
+  "units": [
+    { "id": "金币", "symbol": "G", "desc": "基础货币" },
+    { "id": "钻石", "symbol": "D", "desc": "付费货币" },
+    { "id": "体力", "symbol": "S", "desc": "体力" }
+  ],
+  "rates": [
+    { "from": "钻石", "to": "金币", "value": "10" },
+    { "from": "体力", "to": "金币", "value": "2" }
+  ],
+  "conversions": [
+    { "from": "钻石", "amount": "3" },
+    { "from": "体力", "amount": "5" }
+  ]
+}

@@ -18,6 +18,16 @@ coverage.html
 /bin/
 /dist/
 
+# Docs site (Vite+ / React) — never commit deps or build output
+node_modules/
+docs-site/dist/
+docs-site/.vite/
+*.local
+
+# Optional codegraph233 project-local binaries/index (reprovision on demand)
+.codegraph233/
+.codegraph233.json
+
 # Editor / OS noise
 .DS_Store
 Thumbs.db

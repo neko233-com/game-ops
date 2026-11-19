@@ -16,6 +16,25 @@ from data with the same eleven metric keys.
 
 Check `genre.List()` at runtime for the current set.
 
+## Baseline levers (every genre starts here)
+
+All 29 built-ins start from this exact set; a genre overrides only the rows it
+cares about. Bands are deliberately broad; tune them from live data.
+
+| Metric key | Ideal | Min | Max | Weight |
+|---|---|---|---|---|
+| `retention_d1` | 0.40 | 0.15 | 0.70 | 1.0 |
+| `retention_d7` | 0.18 | 0.05 | 0.40 | 1.0 |
+| `retention_d30` | 0.08 | 0.02 | 0.20 | 1.0 |
+| `economy_source_sink_ratio` | 1 | 0.7 | 1.4 | 1.0 |
+| `economy_inflation` | 1 | 0.8 | 1.3 | 1.0 |
+| `monetization_pay_rate` | 0.03 | 0.01 | 0.15 | 1.0 |
+| `monetization_arpu` | 1 | 0.5 | 3 | 0.8 |
+| `monetization_ltv` | 5 | 1 | 20 | 0.8 |
+| `progression_pace` | 1 | 0.6 | 1.6 | 0.8 |
+| `content_cadence_days` | 14 | 7 | 45 | 0.8 |
+| `content_debt_ratio` | 1 | 0.5 | 2 | 0.6 |
+
 ## What differs between genres
 
 All genres start from one baseline lever set and override only what matters:
