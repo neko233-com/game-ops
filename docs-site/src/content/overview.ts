@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, h2, h3, p, steps, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const overview: DocPage = {
   id: "overview",
@@ -9,6 +10,7 @@ export const overview: DocPage = {
     "这套文档配套一个纯 Go 的长线运营引擎与 agent skill。它讲的是所有数值设计的共同地基：价值如何被定义、如何流动、以什么节奏被消耗与补充。",
   section: "开始",
   readingTime: "5 分钟",
+  i18n: translationsFor("overview"),
   blocks: [
     p(
       "你可能做过战斗数值、养成曲线、礼包定价、活动节奏，也可能正在用 AI 一口气生成几十万行配表。它们看起来是完全不同的工作，但底层只在一件事上反复打转：一个数值代表多少价值，这份价值什么时候流入玩家、什么时候流出，以及流入流出的速度是否匹配。把这件事看透，RPG、SLG、二游、休闲、沙盒的差异就只是参数差异，而不是道理差异。这就是「大道归一」。",

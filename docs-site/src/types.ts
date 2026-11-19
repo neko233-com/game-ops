@@ -18,7 +18,12 @@ export type Block =
   | { type: "steps"; items: Array<{ title: string; text: string }> }
   | { type: "quote"; text: string; attribution?: string }
   | { type: "flow"; diagram: FlowDiagram }
-  | { type: "echarts"; chart: ChartId };
+  | { type: "echarts"; chart: ChartId }
+  /**
+   * 翻译占位块：正文尚未翻译时，用目标语言明确标记，
+   * 然后完整展示中文原文。避免出现半翻译的句子。
+   */
+  | { type: "untranslated"; original: Block };
 
 export type Tone = "note" | "tip" | "warn" | "danger";
 
@@ -36,6 +41,17 @@ export type ChartId =
   | "sensitivity-heatmap"
   | "config-anomaly-scatter";
 
+/**
+ * 一页的可选译文。未提供的字段回退到中文原文。
+ * `blocks` 缺省时，localizePage 会把所有原文块包成 `untranslated` 块。
+ */
+export interface PageTranslation {
+  nav?: string;
+  title?: string;
+  subtitle?: string;
+  blocks?: Block[];
+}
+
 export interface DocPage {
   /** URL hash 用的稳定 id，例如 #/overview */
   id: string;
@@ -50,6 +66,11 @@ export interface DocPage {
   /** 预估阅读时间，仅用于展示 */
   readingTime: string;
   blocks: Block[];
+  /** 多语言译文。中文 (zh-CN) 始终是权威完整版本，不在这里重复。 */
+  i18n?: {
+    en?: PageTranslation;
+    ja?: PageTranslation;
+  };
 }
 
 export const p = (text: string): Block => ({ type: "p", text });

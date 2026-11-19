@@ -229,8 +229,18 @@ Details and manual paths: `references/installation.md`.
 | Non-deterministic parallel results | Index-addressed result slice, fixed worker semantics |
 | Trusting numbers alone on lifespan | Report leading indicators + their limits |
 
+## Language (中文优先 / multi-language)
+
+Chinese is the authoritative primary language and the default everywhere —
+even when the environment locale is not Chinese. English and Japanese are
+supported alternatives. Switch reports with `-lang zh|en|ja` on `cmd/htmlreport`
+and `cmd/proanalysis`; the docs site has a `中文 / EN / 日本語` switcher that
+defaults to Chinese and persists the choice. Numeric values and metric keys are
+never translated; only labels and prose are. Details: `references/i18n.md`.
+
 ## References
 
+- `references/i18n.md` — Chinese-primary, CLI `-lang`, docs-site switcher
 - `references/production-playbook.md` — time-to-cap, parallel scale, QA, Vercel/ECharts
 - `references/unified-theory.md` — 大道归一, lifespan, additive-first, pitfalls
 - `references/normalization.md` — unit value, exchange rates

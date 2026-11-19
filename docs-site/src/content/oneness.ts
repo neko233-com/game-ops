@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, formula, h2, h3, ol, p, quote, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const oneness: DocPage = {
   id: "oneness",
@@ -9,6 +10,7 @@ export const oneness: DocPage = {
     "数值的本质是「价值的定义、流动与节奏」。品类会变、美术会变、玩法会变，但这三件事不变。",
   section: "地基",
   readingTime: "12 分钟",
+  i18n: translationsFor("oneness"),
   blocks: [
     quote("道生一，一生二，二生三，三生万物。", "把万物收束回一个「一」，是所有数值工作的第一步。"),
 

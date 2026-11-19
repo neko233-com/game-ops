@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, formula, h2, h3, ol, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const additiveFirst: DocPage = {
   id: "additive-first",
@@ -8,6 +9,7 @@ export const additiveFirst: DocPage = {
   subtitle: "乘法不是敌人，叠加的乘法才是。加法负责可预测与可调试，乘法只在受控位置出现一次。",
   section: "地基",
   readingTime: "13 分钟",
+  i18n: translationsFor("additive-first"),
   blocks: [
     h2("一、先看两种写法差多少"),
     p(

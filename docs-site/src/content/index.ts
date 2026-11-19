@@ -1,3 +1,6 @@
+import type { Lang } from "../i18n";
+import { messages } from "../i18n/ui";
+import { callout } from "../types";
 import type { DocPage } from "../types";
 import { overview } from "./overview";
 import { oneness } from "./oneness";
@@ -63,6 +66,29 @@ export function groupedPages(): Array<{ section: string; pages: DocPage[] }> {
 
 export function getPage(id: string): DocPage | undefined {
   return pages.find((page) => page.id === id);
+}
+
+/**
+ * 把一页本地化。中文直接返回原文（权威版本）。
+ * 若译文没有提供 blocks，则把所有原文块标记为 `untranslated`，
+ * 保证绝不留下半翻译的句子。
+ */
+export function localizePage(page: DocPage, lang: Lang): DocPage {
+  if (lang === "zh-CN") {
+    return page;
+  }
+
+  const translation = page.i18n?.[lang];
+  if (!translation) {
+    return page;
+  }
+
+  const blocks: DocPage["blocks"] = translation.blocks ?? [
+    callout("note", messages[lang].untranslatedNoticeTitle, messages[lang].untranslatedNotice),
+    ...page.blocks.map((block) => ({ type: "untranslated" as const, original: block })),
+  ];
+
+  return { ...page, ...translation, blocks };
 }
 
 export function neighbours(id: string): { prev?: DocPage; next?: DocPage } {

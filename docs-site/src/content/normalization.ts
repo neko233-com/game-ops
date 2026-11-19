@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, formula, h2, h3, ol, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const normalization: DocPage = {
   id: "normalization",
@@ -8,6 +9,7 @@ export const normalization: DocPage = {
   subtitle: "把所有资源折成一个基准单位，用精确有理数记交换率。这一页给出一套可以照抄的完整例子。",
   section: "地基",
   readingTime: "11 分钟",
+  i18n: translationsFor("normalization"),
   blocks: [
     h2("一、为什么必须先选基准单位"),
     p(

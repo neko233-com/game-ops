@@ -18,6 +18,29 @@ npm run check    # Vite+ 检查：格式化检查 + lint + 类型检查
 
 `dev` / `build` / `preview` / `check` 脚本内部调用项目本地的 `vp`（来自 `vite-plus` 依赖），因此不需要全局安装 Vite+ CLI。
 
+## 多语言（i18n）
+
+文档站支持三种语言：`zh-CN`（简体中文，默认且权威）、`en`（English）、`ja`（日本語）。顶栏右侧的分段控件 `中文 / EN / 日本語` 可即时切换，切换时**保留当前页面 hash 路由**，不需要重新导航；`<html lang>` 会同步更新。
+
+**默认语言规则（优先中文）**：首次访问时**始终显示简体中文**。即使浏览器语言是英文或日文，也不会自动切换到 en/ja；只有用户在顶栏显式选择后才会改变，并写入 `localStorage`（键 `docs-site-lang`）持久化。后续访问优先读取 `localStorage`。`navigator.language` 仍会被读取，但仅用于确认中文系浏览器环境；非中文一律回落到 `zh-CN`。这是刻意的产品决策：中文是权威完整版本，翻译是增量交付。
+
+### 实现方式
+
+- `src/i18n/index.ts`：`Lang` 类型（`"zh-CN" | "en" | "ja"`）、`DEFAULT_LANG`、`I18nProvider`、`useLang()` hook（返回 `{ lang, setLang, t }`）、`detectInitialLang()`（localStorage → navigator.language → 默认中文）。无额外依赖。
+- `src/i18n/ui.ts`：所有界面文案的字典 `messages`；侧边栏分组名用 `sectionLabel()`，阅读时间用 `formatReadingTime()`（把 "5 分钟" 转成对应语言的语序）。涵盖分组名、品牌标语、翻页按钮、TOC 标题、复制按钮、加载文案、提示框徽标、页脚、语言切换器标签等全部 UI chrome。
+- `src/content/*.ts`：每页 `DocPage` 带可选的 `i18n: { en?, ja? }` 字段（`PageTranslation`：`nav` / `title` / `subtitle` / `blocks`）。中文正文始终留在原文件里，是唯一权威版本。
+- `src/content/i18n/en.ts` / `ja.ts`：译文数据。前 3 页（概览、大道归一、归一化与单位价值）提供**完整正文翻译**；其余页面提供导航/标题/副标题翻译。`src/content/i18n/index.ts` 的 `translationsFor(id)` 把译文挂到对应 `DocPage.i18n`。
+- `src/content/index.ts` 的 `localizePage(page, lang)`：中文直接返回原文；译文若没有 `blocks`，则把所有原文块包成 `untranslated` 块，渲染时显示「原文为中文 / Original: Chinese / 原文は中国語」徽标并完整展示中文原文。这样绝不会出现半翻译的句子。未翻译页面不显示 TOC（避免目录里出现中文标题与英文页面混排）。
+
+### 增加/修改翻译
+
+1. 改 UI 文案：编辑 `src/i18n/ui.ts` 中三种语言的 `messages` 条目。
+2. 改某页译文：编辑 `src/content/i18n/en.ts` 或 `ja.ts` 中对应 id 的 `PageTranslation`。
+3. 想把某页从未翻译升级为完整翻译：在该页译文里补上完整的 `blocks` 数组（复用 `src/types.ts` 的 `p` / `h2` / `table` / `callout` 等构造函数）。`localizePage` 会自动改用译文 blocks，不再显示原文徽标。
+4. 新增页面：在 `src/content/` 建数据文件并加入 `pages`；译文可选，缺省时 en/ja 会显示 nav/title/subtitle 的中文回退 + 原文徽标（此时建议至少补上 nav/title/subtitle）。
+
+> 图表页（React Flow / ECharts）的正文在 en/ja 下同样以原文徽标呈现，保证语言一致性；图表内部节点/标题目前沿用中文（数值与公式本身是通用记号），待后续逐图补齐译文。
+
 ## 内容结构
 
 正文全部放在 `src/content/*.ts`，每个文件导出一个 `DocPage` 数据对象；`App.tsx` 只负责渲染，不写正文。新增一页只需：

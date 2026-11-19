@@ -103,14 +103,67 @@ a {
   line-height: 1.4;
 }
 
-.topbar-tag {
+.topbar-right {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lang-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-switch-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  letter-spacing: 0.04em;
+}
+
+.lang-segment {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.lang-segment button {
+  border: 0;
+  background: transparent;
+  padding: 4px 11px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.lang-segment button + button {
+  border-left: 1px solid var(--line);
+}
+
+.lang-segment button:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.lang-segment button.lang-seg-on {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.topbar-tag {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--ink-faint);
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 3px 10px;
+  white-space: nowrap;
 }
 
 .menu-toggle {
@@ -295,6 +348,37 @@ a {
   color: #4338ca;
   padding: 1px 5px;
   border-radius: 4px;
+}
+
+/* ---------- 未翻译正文块的原文标记 ---------- */
+.untranslated-block {
+  position: relative;
+  margin: 14px 0;
+  padding: 14px 16px 2px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: #fcfcfe;
+}
+
+.untranslated-badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--ink-faint);
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  cursor: help;
+}
+
+.untranslated-block .doc-h2,
+.untranslated-block .doc-h3,
+.untranslated-block .doc-p {
+  margin-top: 6px;
 }
 
 /* ---------- 代码块 ---------- */
@@ -712,6 +796,15 @@ a {
 @media (max-width: 520px) {
   .brand small {
     display: none;
+  }
+
+  .lang-switch-label {
+    display: none;
+  }
+
+  .lang-segment button {
+    padding: 4px 8px;
+    font-size: 11px;
   }
 
   .doc-title {

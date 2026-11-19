@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, h2, h3, ol, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const aiNumbers: DocPage = {
   id: "ai-numbers",
@@ -9,6 +10,7 @@ export const aiNumbers: DocPage = {
     "让 agent 在人类给定的约束内设计全部数值、流式吞吐一百万份 Excel/JSON/CSV，并对当前版本给出数值健康判断。",
   section: "AI",
   readingTime: "13 分钟",
+  i18n: translationsFor("ai-numbers"),
   blocks: [
     callout(
       "note",

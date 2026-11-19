@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, h2, h3, ol, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const install: DocPage = {
   id: "install",
@@ -9,6 +10,7 @@ export const install: DocPage = {
     "opencode / codex / dsh / claude 四种运行时都支持。先把 skill 装进项目，再考虑全局；从 GitHub 复制源码并读 README 快速开始。",
   section: "安装",
   readingTime: "10 分钟",
+  i18n: translationsFor("install"),
   blocks: [
     h2("一、总原则：项目优先，全局可选"),
     p(

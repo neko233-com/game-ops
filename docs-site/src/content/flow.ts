@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, h2, ol, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const flow: DocPage = {
   id: "flow",
@@ -9,6 +10,7 @@ export const flow: DocPage = {
     "用 AST 图把玩法代码变成可查询的图谱，让 agent 沿调用链理解「玩家实际经历的流程」。这一部分较慢、可选，且未在本次环境中端到端验证。",
   section: "AI",
   readingTime: "11 分钟",
+  i18n: translationsFor("flow"),
   blocks: [
     callout(
       "warn",

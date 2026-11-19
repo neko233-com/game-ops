@@ -1,6 +1,9 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { getPage, groupedPages, neighbours, pages } from "./content";
+import { getPage, groupedPages, localizePage, neighbours, pages } from "./content";
+import { LANGS, useLang } from "./i18n";
+import type { Lang } from "./i18n";
+import { formatReadingTime, sectionLabel } from "./i18n/ui";
 import { FlowBlock } from "./flow/FlowDiagrams";
 
 // ECharts is large: load it only on the professional analytics page so the main
@@ -10,11 +13,19 @@ const EChartsBlock = lazy(() =>
 );
 import type { Block, DocPage, Tone } from "./types";
 
-const toneLabels: Record<Tone, string> = {
-  note: "说明",
-  tip: "建议",
-  warn: "注意",
-  danger: "重要",
+type ToneKey = "toneNote" | "toneTip" | "toneWarn" | "toneDanger";
+
+const toneKeys: Record<Tone, ToneKey> = {
+  note: "toneNote",
+  tip: "toneTip",
+  warn: "toneWarn",
+  danger: "toneDanger",
+};
+
+const langLabelKeys: Record<Lang, "langZh" | "langEn" | "langJa"> = {
+  "zh-CN": "langZh",
+  en: "langEn",
+  ja: "langJa",
 };
 
 function headingId(index: number): string {
@@ -43,6 +54,7 @@ function renderInline(text: string): ReactNode[] {
 }
 
 function CopyButton({ source }: { source: string }) {
+  const { t } = useLang();
   const [copied, setCopied] = useState(false);
 
   function handleCopy() {
@@ -54,12 +66,14 @@ function CopyButton({ source }: { source: string }) {
 
   return (
     <button type="button" className="copy-btn" onClick={handleCopy}>
-      {copied ? "已复制" : "复制"}
+      {copied ? t("copied") : t("copy")}
     </button>
   );
 }
 
 function BlockView({ block, index }: { block: Block; index: number }) {
+  const { t } = useLang();
+
   switch (block.type) {
     case "h2":
       return (
@@ -134,7 +148,7 @@ function BlockView({ block, index }: { block: Block; index: number }) {
       return (
         <aside className={`callout callout-${block.tone}`}>
           <div className="callout-title">
-            <span className="callout-badge">{toneLabels[block.tone]}</span>
+            <span className="callout-badge">{t(toneKeys[block.tone])}</span>
             <strong>{renderInline(block.title)}</strong>
           </div>
           <p>{renderInline(block.text)}</p>
@@ -172,14 +186,24 @@ function BlockView({ block, index }: { block: Block; index: number }) {
       return <FlowBlock diagram={block.diagram} />;
     case "echarts":
       return (
-        <Suspense fallback={<div className="chart-loading">加载图表…</div>}>
+        <Suspense fallback={<div className="chart-loading">{t("chartLoading")}</div>}>
           <EChartsBlock chart={block.chart} />
         </Suspense>
+      );
+    case "untranslated":
+      return (
+        <div className="untranslated-block">
+          <span className="untranslated-badge" title={t("originalBadgeNote")}>
+            {t("originalBadge")}
+          </span>
+          <BlockView block={block.original} index={index} />
+        </div>
       );
   }
 }
 
 function Toc({ page, active }: { page: DocPage; active: string }) {
+  const { t } = useLang();
   const headings = page.blocks
     .map((block, index) => ({ block, index }))
     .filter((entry) => entry.block.type === "h2" || entry.block.type === "h3");
@@ -189,8 +213,8 @@ function Toc({ page, active }: { page: DocPage; active: string }) {
   }
 
   return (
-    <nav className="toc" aria-label="本页目录">
-      <div className="toc-title">本页目录</div>
+    <nav className="toc" aria-label={t("tocTitle")}>
+      <div className="toc-title">{t("tocTitle")}</div>
       <ul>
         {headings.map(({ block, index }) => {
           const text = block.type === "h2" || block.type === "h3" ? block.text : "";
@@ -224,11 +248,13 @@ function readHash(): string {
 }
 
 export default function App() {
+  const { lang, setLang, t } = useLang();
   const [pageId, setPageId] = useState<string>(readHash);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeHeading, setActiveHeading] = useState("");
 
-  const page = getPage(pageId) ?? pages[0];
+  const basePage = getPage(pageId) ?? pages[0];
+  const page = useMemo(() => localizePage(basePage, lang), [basePage, lang]);
   const groups = useMemo(() => groupedPages(), []);
   const { prev, next } = useMemo(() => neighbours(page.id), [page.id]);
 
@@ -273,7 +299,7 @@ export default function App() {
         <button
           type="button"
           className="menu-toggle"
-          aria-label="切换侧边栏"
+          aria-label={t("menuToggleLabel")}
           onClick={() => setSidebarOpen((open) => !open)}
         >
           ☰
@@ -281,11 +307,29 @@ export default function App() {
         <button type="button" className="brand" onClick={() => navigate(pages[0].id)}>
           <span className="brand-mark">道</span>
           <span>
-            <strong>大道归一</strong>
-            <small>游戏数值与长线运营手册</small>
+            <strong>{t("brandTitle")}</strong>
+            <small>{t("brandSubtitle")}</small>
           </span>
         </button>
-        <span className="topbar-tag">companion docs</span>
+        <div className="topbar-right">
+          <div className="lang-switch" role="group" aria-label={t("languageSwitcherLabel")}>
+            <span className="lang-switch-label">{t("languageSwitcherLabel")}</span>
+            <div className="lang-segment">
+              {LANGS.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  className={code === lang ? "lang-seg-on" : ""}
+                  aria-pressed={code === lang}
+                  onClick={() => setLang(code)}
+                >
+                  {t(langLabelKeys[code])}
+                </button>
+              ))}
+            </div>
+          </div>
+          <span className="topbar-tag">{t("topbarTag")}</span>
+        </div>
       </header>
 
       <div className="layout">
@@ -293,23 +337,26 @@ export default function App() {
           <div className="sidebar-inner">
             {groups.map((group) => (
               <div className="nav-group" key={group.section}>
-                <div className="nav-group-title">{group.section}</div>
+                <div className="nav-group-title">{sectionLabel(lang, group.section)}</div>
                 <ul>
-                  {group.pages.map((item) => (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        className={`nav-link ${item.id === page.id ? "nav-active" : ""}`}
-                        onClick={() => navigate(item.id)}
-                      >
-                        {item.nav}
-                      </button>
-                    </li>
-                  ))}
+                  {group.pages.map((item) => {
+                    const localized = localizePage(item, lang);
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          className={`nav-link ${item.id === page.id ? "nav-active" : ""}`}
+                          onClick={() => navigate(item.id)}
+                        >
+                          {localized.nav}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}
-            <div className="sidebar-foot">数值是体检报告，不是命运判词。</div>
+            <div className="sidebar-foot">{t("sidebarFoot")}</div>
           </div>
         </aside>
 
@@ -317,7 +364,7 @@ export default function App() {
           <button
             type="button"
             className="sidebar-backdrop"
-            aria-label="关闭侧边栏"
+            aria-label={t("closeSidebarLabel")}
             onClick={() => setSidebarOpen(false)}
           />
         ) : null}
@@ -325,10 +372,10 @@ export default function App() {
         <main className="main">
           <article className="doc">
             <div className="doc-breadcrumb">
-              <span>{page.section}</span>
+              <span>{sectionLabel(lang, basePage.section)}</span>
               <span className="crumb-sep">/</span>
               <span>{page.nav}</span>
-              <span className="reading-time">约 {page.readingTime}</span>
+              <span className="reading-time">{formatReadingTime(lang, basePage.readingTime)}</span>
             </div>
             <h1 className="doc-title">{page.title}</h1>
             <p className="doc-subtitle">{page.subtitle}</p>
@@ -339,11 +386,11 @@ export default function App() {
               ))}
             </div>
 
-            <nav className="page-nav" aria-label="页面导航">
+            <nav className="page-nav" aria-label={t("pageNavLabel")}>
               {prev ? (
                 <button type="button" className="page-nav-btn" onClick={() => navigate(prev.id)}>
-                  <small>← 上一篇</small>
-                  <span>{prev.nav}</span>
+                  <small>{t("prevPage")}</small>
+                  <span>{localizePage(prev, lang).nav}</span>
                 </button>
               ) : (
                 <span />
@@ -354,8 +401,8 @@ export default function App() {
                   className="page-nav-btn page-nav-next"
                   onClick={() => navigate(next.id)}
                 >
-                  <small>下一篇 →</small>
-                  <span>{next.nav}</span>
+                  <small>{t("nextPage")}</small>
+                  <span>{localizePage(next, lang).nav}</span>
                 </button>
               ) : (
                 <span />

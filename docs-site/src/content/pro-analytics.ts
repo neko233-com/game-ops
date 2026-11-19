@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, echart, formula, h2, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const proAnalytics: DocPage = {
   id: "pro-analytics",
@@ -8,6 +9,7 @@ export const proAnalytics: DocPage = {
   subtitle: "面向数值主策划的密度视图：双轴、图例、阈值线与精确数值。所有引擎计算使用精确有理数。",
   section: "专业",
   readingTime: "16 分钟",
+  i18n: translationsFor("pro-analytics"),
   blocks: [
     h2("读图约定与数值精度"),
     p(

@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, flow, h2, ol, p } from "../types";
+import { translationsFor } from "./i18n";
 
 export const systemMap: DocPage = {
   id: "system-map",
@@ -8,6 +9,7 @@ export const systemMap: DocPage = {
   subtitle: "六个环节串成一条因果链。点节点看它在讲什么，拨动开关对比「加法优先」和「乘法叠加」。",
   section: "图解",
   readingTime: "5 分钟",
+  i18n: translationsFor("system-map"),
   blocks: [
     p(
       "数值不是一堆孤立的表格。战斗数值影响战力，战力影响升级手感，升级成本影响经济，经济缺口影响付费，付费又影响玩家还玩不玩——最后一个环节还会倒过头来逼我们改战斗数值。下图按 ① → ⑥ 的顺序读，点任意节点看大白话解释。",

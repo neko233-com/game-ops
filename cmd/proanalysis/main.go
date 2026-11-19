@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/neko233/game-ops/design"
+	"github.com/neko233/game-ops/i18n"
 	"github.com/neko233/game-ops/ingest"
 	"github.com/neko233/game-ops/num"
 	"github.com/neko233/game-ops/progression"
@@ -79,6 +80,7 @@ func main() {
 	maxFiles := flag.Int64("max-files", 1000000, "config file ceiling")
 	roots := flag.String("roots", "examples", "comma-separated config roots")
 	out := flag.String("out", "", "output Markdown file (default stdout)")
+	langFlag := flag.String("lang", "zh", "language: zh (default, primary) | en | ja")
 	flag.Parse()
 
 	raw, err := os.ReadFile(*specPath)
@@ -168,44 +170,52 @@ func main() {
 	}
 	elapsed := time.Since(start)
 
+	lang := i18n.Parse(*langFlag)
+	tr := func(key string) string { return i18n.T(lang, key) }
 	base := summaries[0]
 	buf := &bufWriter{}
 	w := buf.WriteString
 
 	w("# %s\n\n", s.Title)
-	w("- 生成时间：%s ｜ 精确有理数计算（`num.Num`），无浮点误差\n", time.Now().Format("2006-01-02 15:04:05"))
-	w("- 基准单位：%s ｜ 并行度：%d workers ｜ 场景数：%d ｜ 配表：%d 文件 / %d 行 ｜ 耗时：%s\n\n",
-		s.BaseUnit, *workers, len(scenarios), stats.Files, stats.Rows, elapsed.Round(time.Millisecond))
+	w("- %s：%s ｜ %s ｜ %s：%d ｜ %s：%d ｜ %s：%d / %s：%d ｜ %s：%s\n\n",
+		tr("meta.generated"), time.Now().Format("2006-01-02 15:04:05"), tr("label.exact"),
+		tr("label.parallel"), *workers, tr("label.scenarios"), len(scenarios),
+		tr("label.config"), stats.Files, tr("label.rows"), stats.Rows,
+		tr("label.elapsed"), elapsed.Round(time.Millisecond))
 
-	w("## 1. 方法与输入\n\n")
-	w("- 总经验 = Σ(l=1..满级-1) [base + step·(l−1)]，精确求和。\n")
-	w("- 每日经验 = Σ(活动分钟 × 每分钟经验) × 玩家效率；活动按日上限顺序分配时间。\n")
-	w("- 满级天数 = 总经验 ÷ 每日经验（精确分数）；留存触达率 = D1/D7/D30 锚点线性插值外推。\n")
-	w("- 经验曲线：base=%s，基准 step=%s，cap=%s，基准满级=%d。\n\n",
-		s.XPCurve.Base, s.XPCurve.Step, s.XPCurve.Cap, s.MaxLevel)
+	w("## 1. %s\n\n", tr("section.method.title"))
+	w("- %s\n", tr("method.totalXP"))
+	w("- %s\n", tr("method.dailyXP"))
+	w("- %s\n", tr("method.days"))
+	w("- %s：base=%s，step=%s，cap=%s，%s=%d。\n\n",
+		tr("meta.curve"), s.XPCurve.Base, s.XPCurve.Step, s.XPCurve.Cap, tr("meta.baseMaxLevel"), s.MaxLevel)
 
-	w("## 2. 常规/轻度/重度玩家满级时间（基准场景 %s）\n\n", base.ScenarioName)
-	w("| 玩家类型 | 总经验 | 每日经验 | 满级天数（精确） | 满级天数（约） | 满级时留存 | 人口权重 |\n")
+	w("## 2. %s（%s %s）\n\n", tr("section.capacity.title"), tr("column.scenario"), base.ScenarioName)
+	w("| %s | %s | %s | %s | %s | %s | %s |\n",
+		tr("column.archetype"), tr("column.totalXP"), tr("column.dailyXP"),
+		tr("column.daysExact"), tr("column.daysApprox"), tr("column.survival"), tr("column.weight"))
 	w("|---|---|---|---|---|---|---|\n")
 	for _, r := range base.Results {
 		w("| %s | %s | %s | %s | %.2f | %s | %s |\n",
 			r.ArchetypeName, r.TotalXP.String(), r.DailyXP.String(), r.Days.String(),
 			r.Days.Float64(), r.SurvivalAtCap.DecimalString(4), r.Weight.String())
 	}
-	w("\n加权分位数（按人口权重）：\n\n")
+	w("\n%s：\n\n", tr("label.weightedPercentiles"))
 	w("| P10 | P25 | P50 | P75 | P90 |\n|---|---|---|---|---|\n")
 	w("| %s | %s | %s | %s | %s |\n\n",
 		base.Percentiles["p10"].DecimalString(2), base.Percentiles["p25"].DecimalString(2),
 		base.Percentiles["p50"].DecimalString(2), base.Percentiles["p75"].DecimalString(2),
 		base.Percentiles["p90"].DecimalString(2))
 
-	w("## 3. 敏感度扫描（并行 %d 场景）\n\n", len(summaries))
-	w("| 场景 | step | 满级 | 常规天数 | 轻度天数 | 重度天数 | P50 天数 |\n")
+	w("## 3. %s（%s %d）\n\n", tr("section.sensitivity.title"), tr("label.scenarios"), len(summaries))
+	w("| %s | step | %s | %s | %s | %s | %s |\n",
+		tr("column.scenario"), tr("column.cap"), tr("column.normalDays"),
+		tr("column.lightDays"), tr("column.heavyDays"), tr("column.p50Days"))
 	w("|---|---|---|---|---|---|---|\n")
 	for _, sum := range summaries {
-		normal, _ := findResult(sum, "常规")
-		light, _ := findResult(sum, "轻度")
-		heavy, _ := findResult(sum, "重度")
+		normal := sum.Results[0]
+		light := sum.Results[1]
+		heavy := sum.Results[2]
 		w("| %s | %s | %s | %s | %s | %s | %s |\n",
 			sum.ScenarioName, stepOf(sum.ScenarioName), levelOf(sum.ScenarioName),
 			normal.Days.DecimalString(2), light.Days.DecimalString(2),
@@ -213,7 +223,7 @@ func main() {
 	}
 	w("\n")
 
-	w("## 4. 配表异常（并行扫描）\n\n")
+	w("## 4. %s\n\n", tr("section.qa.title"))
 	type spread struct {
 		key   string
 		ratio num.Num
@@ -235,9 +245,9 @@ func main() {
 		}
 		return spreads[i].key < spreads[j].key // deterministic tie-break for map order
 	})
-	w("- 解析错误：%d；列数：%d\n", stats.Errors, len(stats.Columns))
+	w("- %s：%d；%s：%d\n", tr("label.parseErrors"), stats.Errors, tr("label.columns"), len(stats.Columns))
 	if len(spreads) == 0 {
-		w("- 无可分析列。\n")
+		w("- %s\n", tr("note.noColumns"))
 	}
 	for i, sp := range spreads {
 		if i >= 10 {
@@ -245,33 +255,33 @@ func main() {
 		}
 		flagMark := ""
 		if sp.ratio.Cmp(num.MustFromString("10")) > 0 {
-			flagMark = " ⚠ 超过 10×，需人工确认"
+			flagMark = " ⚠ " + tr("flag.outlier")
 		}
 		w("- `%s`：max/min = %s%s\n", sp.key, sp.ratio.DecimalString(2), flagMark)
 	}
 	w("\n")
 
-	w("## 5. 结论与建议\n\n")
+	w("## 5. %s\n\n", tr("section.recommendations.title"))
 	p50 := base.Percentiles["p50"]
-	if p50.Cmp(num.MustFromString("120")) > 0 {
-		w("- **满级周期偏长**：P50 超过 120 天。建议上调经验曲线 step、提高活动经验密度，或降低满级门槛；用第 3 节敏感度表选择目标档位。\n")
-	} else if p50.Cmp(num.MustFromString("60")) < 0 {
-		w("- **满级周期偏短**：P50 不足 60 天，长期内容消耗可能过快。建议下调 step 或补充满级后追求目标。\n")
-	} else {
-		w("- **满级周期在合理区间**：P50 处于 60–120 天。\n")
+	switch {
+	case p50.Cmp(num.MustFromString("120")) > 0:
+		w("- **%s**\n", tr("conclusion.long"))
+	case p50.Cmp(num.MustFromString("60")) < 0:
+		w("- **%s**\n", tr("conclusion.short"))
+	default:
+		w("- **%s**\n", tr("conclusion.ok"))
 	}
-	normal, _ := findResult(base, "常规")
+	normal := base.Results[0]
 	if normal.SurvivalAtCap.Cmp(num.MustFromString("1/10")) < 0 {
-		w("- **满级触达率过低**：常规玩家满级时留存仅 %s，多数玩家在满级前流失；建议把关键奖励前移，或降低满级所需总经验。\n",
-			normal.SurvivalAtCap.DecimalString(4))
+		w("- **%s**\n", fmt.Sprintf(tr("conclusion.survival"), normal.SurvivalAtCap.DecimalString(4)))
 	}
 	for _, sp := range spreads {
 		if sp.ratio.Cmp(num.MustFromString("10")) > 0 {
-			w("- **配表异常**：`%s` 的 max/min 达 %s，检查是否误填单位或指数公式。\n", sp.key, sp.ratio.DecimalString(2))
+			w("- **%s**\n", fmt.Sprintf(tr("conclusion.config"), sp.key, sp.ratio.DecimalString(2)))
 			break
 		}
 	}
-	w("- 所有建议需用 `cmd/numgen`、`cmd/ingest`、`cmd/ops` 重新验证后再进入版本。\n")
+	w("- %s\n", tr("advice.verify"))
 
 	text := buf.String()
 	if *out != "" {

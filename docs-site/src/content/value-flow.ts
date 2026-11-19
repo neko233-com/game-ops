@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, flow, h2, ol, p, table } from "../types";
+import { translationsFor } from "./i18n";
 
 export const valueFlow: DocPage = {
   id: "value-flow",
@@ -8,6 +9,7 @@ export const valueFlow: DocPage = {
   subtitle: "一张可以拖、可以点的图，把「产出 → 钱包 → 消耗」讲清楚。先看图，再读字。",
   section: "图解",
   readingTime: "5 分钟",
+  i18n: translationsFor("value-flow"),
   blocks: [
     p(
       "老板不用记公式。只要记住一件事：游戏经济就是一个水池。左边的水龙头往里放钱，右边的下水口把钱花掉，中间是玩家的钱包。水龙头和下水口差不多大，水池的水位就稳；一头大一头小，不是通胀就是稀缺。",

@@ -13,6 +13,7 @@ import (
 
 	"github.com/neko233/game-ops/design"
 	"github.com/neko233/game-ops/genre"
+	"github.com/neko233/game-ops/i18n"
 	"github.com/neko233/game-ops/num"
 	"github.com/neko233/game-ops/ops"
 )
@@ -22,6 +23,7 @@ type Spec struct {
 	Title    string            `json:"title"`
 	Subtitle string            `json:"subtitle"`
 	Genre    string            `json:"genre"`
+	Lang     string            `json:"lang"` // zh (default, primary) | en | ja
 	Values   map[string]string `json:"values"`
 	BaseUnit string            `json:"baseUnit"`
 	Rates    []struct {
@@ -92,6 +94,8 @@ type CurveView struct {
 // Data is all the view data the template needs.
 type Data struct {
 	Title, Subtitle, Genre, GenreName string
+	LangCode                          string
+	Strings                           map[string]string
 	ScoreText, ScoreExact, Verdict    string
 	VerdictClass                      string
 	Critical, Warn                    bool
@@ -150,10 +154,12 @@ func Build(s Spec) (Data, error) {
 		return Data{}, err
 	}
 
+	lang := i18n.Parse(s.Lang)
 	d := Data{
 		Title: s.Title, Subtitle: s.Subtitle, Genre: s.Genre, GenreName: g.Name,
+		LangCode: string(lang), Strings: i18n.All()[lang],
 		ScoreText: result.Score.DecimalString(4), ScoreExact: result.Score.String(),
-		Verdict:   verdictLabel(result.Verdict),
+		Verdict:   i18n.T(lang, "verdict."+result.Verdict),
 		Generated: time.Now().Format("2006-01-02 15:04:05"),
 	}
 	switch result.Verdict {
@@ -170,12 +176,12 @@ func Build(s Spec) (Data, error) {
 
 	base := s.BaseUnit
 	if base == "" {
-		base = "基准单位"
+		base = i18n.T(lang, "label.baseUnit")
 	}
 	d.MethodLines = []string{
-		fmt.Sprintf("单位价值：所有资源以精确有理数折算到「%s」，汇率来自配表而非手填。", base),
-		fmt.Sprintf("source/sink = %s：产出与消耗的比率，理想值 1；偏离即通胀或稀缺。", divSafe(sumStrings(s.Sources), sumStrings(s.Sinks))),
-		"fitness = clamp(1 − |observed − ideal| ÷ ((max − min)/2), 0, 1)；score = Σ(fitness × weight) ÷ Σweight。",
+		fmt.Sprintf("%s: %s", i18n.T(lang, "label.baseUnit"), base),
+		fmt.Sprintf("source/sink = %s — %s", divSafe(sumStrings(s.Sources), sumStrings(s.Sinks)), i18n.T(lang, "metric.economy_source_sink_ratio")),
+		"fitness = clamp(1 − |observed − ideal| ÷ ((max − min)/2), 0, 1); score = Σ(fitness × weight) ÷ Σweight.",
 	}
 
 	byMetric := map[string]ops.Diagnostic{}
@@ -214,7 +220,10 @@ func Build(s Spec) (Data, error) {
 		return diags[i].Metric < diags[j].Metric
 	})
 	for _, diag := range diags {
-		meaning := metricMeaning[diag.Metric]
+		meaning := i18n.T(lang, "metric."+diag.Metric)
+		if meaning == "metric."+diag.Metric {
+			meaning = metricMeaning[diag.Metric]
+		}
 		if meaning == "" {
 			meaning = diag.Metric
 		}
@@ -222,15 +231,27 @@ func Build(s Spec) (Data, error) {
 			Metric: diag.Metric, Meaning: meaning,
 			Observed: diag.Observed.DecimalString(6), Ideal: diag.Ideal.DecimalString(6),
 			Fitness:  diag.Fitness.DecimalString(4),
-			Status:   map[string]string{"ok": "ok", "warn": "warn", "critical": "critical"}[diag.Status],
+			Status:   i18n.T(lang, "status."+diag.Status),
 			Critical: diag.Status == "critical", Warn: diag.Status == "warn",
 		})
 	}
 
 	sr, sink := sumStrings(s.Sources), sumStrings(s.Sinks)
+	notes := map[string]string{
+		"balanced":  i18n.T(lang, "metric.economy_source_sink_ratio"),
+		"inflation": "净注入过多，货币存量与物价上行。",
+		"scarcity":  "回收大于产出，成长会卡住。",
+	}
+	if lang == i18n.EN {
+		notes["balanced"], notes["inflation"], notes["scarcity"] =
+			"Sources and sinks are balanced.", "Net injection is too high; currency and prices rise.", "Sinks exceed sources; progression stalls."
+	} else if lang == i18n.JA {
+		notes["balanced"], notes["inflation"], notes["scarcity"] =
+			"流入と流出が均衡しています。", "純注入が多すぎ、通貨と物価が上昇します。", "流出が流入を上回り、進行が停止します。"
+	}
 	d.Flow = FlowView{
 		SourceTotal: sr.DecimalString(4), SinkTotal: sink.DecimalString(4),
-		Verdict: "balanced", Note: "产出与消耗平衡，经济稳定。", Good: true,
+		Verdict: "balanced", Note: notes["balanced"], Good: true,
 	}
 	if !sink.IsZero() {
 		ratio, err := sr.Div(sink)
@@ -238,9 +259,9 @@ func Build(s Spec) (Data, error) {
 			d.Flow.Ratio = ratio.DecimalString(4)
 			switch {
 			case ratio.Cmp(num.MustFromString("11/10")) > 0:
-				d.Flow.Verdict, d.Flow.Note, d.Flow.Good = "inflation", "净注入过多，货币存量与物价上行。", false
+				d.Flow.Verdict, d.Flow.Note, d.Flow.Good = "inflation", notes["inflation"], false
 			case ratio.Cmp(num.MustFromString("9/10")) < 0:
-				d.Flow.Verdict, d.Flow.Note, d.Flow.Good = "scarcity", "回收大于产出，成长会卡住。", false
+				d.Flow.Verdict, d.Flow.Note, d.Flow.Good = "scarcity", notes["scarcity"], false
 			}
 		}
 	}
@@ -272,17 +293,34 @@ func Build(s Spec) (Data, error) {
 			break
 		}
 		d.Decisions = append(d.Decisions, fmt.Sprintf(
-			"%s：observed=%s, ideal=%s, fitness=%s — 需评估是否调整配表。",
-			diag.Metric, diag.Observed, diag.Ideal, diag.Fitness))
+			"%s: observed=%s, ideal=%s, fitness=%s — %s",
+			diag.Metric, diag.Observed, diag.Ideal, diag.Fitness, d.Strings["advice.rebalance"]))
 	}
 	if len(d.Decisions) == 0 {
-		d.Decisions = []string{"无越界指标。维持当前节奏，按内容 cadence 复盘。"}
+		d.Decisions = []string{d.Strings["note.noIssues"]}
 	}
-	d.OneLiner = "数值健康，按当前节奏推进。"
-	if result.Verdict == "attention" {
-		d.OneLiner = "存在关注项，建议本版本内修正后复核。"
-	} else if result.Verdict == "critical" {
-		d.OneLiner = "存在越界指标，建议先修复再推进新内容。"
+	d.OneLiner = d.Strings["advice.verify"]
+	if lang == i18n.EN {
+		d.OneLiner = "Numerically healthy; keep the current cadence."
+		if result.Verdict == "attention" {
+			d.OneLiner = "Some metrics need attention; fix and re-check this build."
+		} else if result.Verdict == "critical" {
+			d.OneLiner = "Metrics are out of band; fix before shipping new content."
+		}
+	} else if lang == i18n.JA {
+		d.OneLiner = "数値は健全です。現在のペースを維持してください。"
+		if result.Verdict == "attention" {
+			d.OneLiner = "要注意の指標があります。修正して再確認してください。"
+		} else if result.Verdict == "critical" {
+			d.OneLiner = "許容範囲外の指標があります。新コンテンツより先に修正してください。"
+		}
+	} else {
+		d.OneLiner = "数值健康，按当前节奏推进。"
+		if result.Verdict == "attention" {
+			d.OneLiner = "存在关注项，建议本版本内修正后复核。"
+		} else if result.Verdict == "critical" {
+			d.OneLiner = "存在越界指标，建议先修复再推进新内容。"
+		}
 	}
 	return d, nil
 }
@@ -309,13 +347,11 @@ func sumStrings(m map[string]string) num.Num {
 	return total
 }
 
-func verdictLabel(v string) string {
-	return map[string]string{"healthy": "healthy", "attention": "attention", "critical": "critical"}[v]
-}
-
 // Render produces a self-contained Vercel-styled HTML document.
 func Render(d Data) ([]byte, error) {
-	tmpl, err := template.New("dashboard").Parse(pageTemplate)
+	tmpl, err := template.New("dashboard").Funcs(template.FuncMap{
+		"tr": func(key string) string { return i18n.T(i18n.Parse(d.LangCode), key) },
+	}).Parse(pageTemplate)
 	if err != nil {
 		return nil, err
 	}
@@ -327,7 +363,7 @@ func Render(d Data) ([]byte, error) {
 }
 
 const pageTemplate = `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8">
+<html lang="{{.LangCode}}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{.Title}}</title>
 <style>
@@ -377,16 +413,16 @@ footer{border-top:1px solid var(--line);margin-top:64px;padding-top:20px;color:v
 @media(max-width:760px){.formula,.pillars{grid-template-columns:1fr}.hero{flex-direction:column;align-items:flex-start}.flow{flex-direction:column}.box+.box{border-left:0;border-top:1px solid var(--line)}}
 </style></head><body>
 <div class="wrap">
-<div class="topbar"><div class="brand"><span class="mark">▲</span> game-ops / 数值主策划工作台</div><div class="meta">{{.Genre}} · {{.Generated}} · exact rational math</div></div>
-<div class="eyebrow">Long-term operation / numerical health</div>
+<div class="topbar"><div class="brand"><span class="mark">▲</span> game-ops / {{tr "title.proanalysis"}}</div><div class="meta">{{.Genre}} · {{.Generated}} · exact rational math</div></div>
+<div class="eyebrow">{{tr "label.method"}} / numerical health</div>
 <h1>{{.Title}}</h1>
-<p class="sub">{{.Subtitle}} · 品类 {{.GenreName}}（<code>{{.Genre}}</code>）</p>
+<p class="sub">{{.Subtitle}} · {{tr "label.genre"}} {{.GenreName}}（<code>{{.Genre}}</code>）</p>
 
 <div class="hero">
  <div class="gauge"><svg width="132" height="132" viewBox="0 0 132 132">
   <circle cx="66" cy="66" r="54" fill="none" stroke="#eaeaea" stroke-width="6"/>
   <circle cx="66" cy="66" r="54" fill="none" stroke="#000" stroke-width="6" stroke-linecap="butt" stroke-dasharray="{{printf "%.2f %.2f" .GaugeFill .GaugeRest}}"/>
- </svg><div class="val"><b class="mono">{{.ScoreText}}</b><small>weighted score</small></div></div>
+ </svg><div class="val"><b class="mono">{{.ScoreText}}</b><small>{{tr "label.score"}}</small></div></div>
  <div><span class="badge {{.VerdictClass}}"><span class="dot {{if .Critical}}bad{{else if .Warn}}warn{{else}}ok{{end}}"></span><b>{{.Verdict}}</b></span>
  <h2>{{.OneLiner}}</h2><p class="note">精确值：<b>{{.ScoreExact}}</b> · 0–1 加权分。<code>healthy ≥ 0.8</code>，<code>attention ≥ 0.6</code>，否则 <code>critical</code>。</p></div>
 </div>
@@ -394,7 +430,7 @@ footer{border-top:1px solid var(--line);margin-top:64px;padding-top:20px;color:v
  {{range .MethodLines}}<div><span>method</span><p>{{.}}</p></div>{{end}}
 </div>
 
-<section><div class="sec-head"><h2>五大支柱</h2><span>5 pillars / 11 metrics</span></div>
+<section><div class="sec-head"><h2>{{tr "section.pillars"}}</h2><span>5 pillars / 11 metrics</span></div>
 <div class="pillars">
  {{range .Pillars}}<div class="pillar"><div class="name">{{.Name}}</div><div class="desc">{{.Desc}}</div>
  <div class="pct">{{printf "%.1f" .Percent}}<span style="font-size:12px;color:#666">%</span></div>
@@ -402,22 +438,22 @@ footer{border-top:1px solid var(--line);margin-top:64px;padding-top:20px;color:v
  <div class="st {{if eq .Status "critical"}}bad{{else if eq .Status "warn"}}warn{{else}}good{{end}}">{{.Status}}</div></div>{{end}}
 </div></section>
 
-<section><div class="sec-head"><h2>指标明细</h2><span>sorted by fitness ascending</span></div>
-<table><tr><th>metric</th><th>含义</th><th>observed</th><th>ideal</th><th>fitness</th><th>status</th></tr>
+<section><div class="sec-head"><h2>{{tr "section.metrics"}}</h2><span>sorted by fitness ascending</span></div>
+<table><tr><th>{{tr "column.metric"}}</th><th>{{tr "column.meaning"}}</th><th>{{tr "column.observed"}}</th><th>{{tr "column.ideal"}}</th><th>{{tr "column.fitness"}}</th><th>{{tr "column.status"}}</th></tr>
 {{range .Diagnostics}}<tr><td><span class="dot {{if .Critical}}bad{{else if .Warn}}warn{{else}}ok{{end}}"></span><span class="mono">{{.Metric}}</span></td>
 <td>{{.Meaning}}</td><td class="mono">{{.Observed}}</td><td class="mono">{{.Ideal}}</td><td class="mono">{{.Fitness}}</td><td class="mono">{{.Status}}</td></tr>{{end}}
 </table></section>
 
-<section><div class="sec-head"><h2>价值流动</h2><span>source / sink / base unit</span></div>
+<section><div class="sec-head"><h2>{{tr "section.flow"}}</h2><span>source / sink / base unit</span></div>
 <div class="flow">
- <div class="box"><div class="lbl">sources</div><div class="num">{{.Flow.SourceTotal}}</div><div class="list">任务 / 关卡 / 充值<br>精确有理数求和</div></div>
+ <div class="box"><div class="lbl">{{tr "label.sources"}}</div><div class="num">{{.Flow.SourceTotal}}</div><div class="list">任务 / 关卡 / 充值<br>精确有理数求和</div></div>
  <div class="arrow">→</div>
- <div class="box"><div class="lbl">ratio</div><div class="num">{{.Flow.Ratio}}</div><div class="list">产出 ÷ 消耗<br>理想值 1</div></div>
+ <div class="box"><div class="lbl">{{tr "label.ratio"}}</div><div class="num">{{.Flow.Ratio}}</div><div class="list">产出 ÷ 消耗<br>理想值 1</div></div>
  <div class="arrow">→</div>
- <div class="box"><div class="lbl">sinks</div><div class="num">{{.Flow.SinkTotal}}</div><div class="list">升级 / 抽卡 / 门票<br>精确有理数求和</div></div>
+ <div class="box"><div class="lbl">{{tr "label.sinks"}}</div><div class="num">{{.Flow.SinkTotal}}</div><div class="list">升级 / 抽卡 / 门票<br>精确有理数求和</div></div>
 </div><p class="note"><b>{{.Flow.Verdict}}</b> — {{.Flow.Note}}</p></section>
 
-<section><div class="sec-head"><h2>成长曲线</h2><span>additive-first</span></div>
+<section><div class="sec-head"><h2>{{tr "section.curve"}}</h2><span>additive-first</span></div>
 <div class="chart"><svg width="740" height="260" viewBox="0 0 740 260" role="img" aria-label="additive growth curve">
  <line x1="50" y1="230" x2="710" y2="230" stroke="#eaeaea"/><line x1="50" y1="40" x2="50" y2="230" stroke="#eaeaea"/>
  <line x1="50" y1="140" x2="710" y2="140" stroke="#eaeaea" stroke-dasharray="2 4"/>
@@ -427,7 +463,7 @@ footer{border-top:1px solid var(--line);margin-top:64px;padding-top:20px;color:v
  <text x="56" y="32" font-size="11" fill="#000" font-family="monospace">{{.Curve.Title}}: base + step·(n−1), capped</text>
 </svg><p class="note">乘法叠加 <code>base·1.1^n</code> 在 L40 约 45×；加法曲线边际增量恒定，可预测、可封顶、可回退。</p></div></section>
 
-<section><div class="sec-head"><h2>风险与调整建议</h2><span>top 3 by severity</span></div>
+<section><div class="sec-head"><h2>{{tr "section.risks"}}</h2><span>{{tr "label.top3"}}</span></div>
 <ol>{{range .Decisions}}<li>{{.}}</li>{{end}}</ol></section>
-<footer>game-ops · 所有数值以 big.Rat 精确计算；字符串配置保留精度 · fitness = clamp(1 − |observed − ideal| ÷ band, 0, 1)</footer>
+<footer>game-ops · {{tr "label.exact"}}；字符串配置保留精度 · fitness = clamp(1 − |observed − ideal| ÷ band, 0, 1)</footer>
 </div></body></html>`

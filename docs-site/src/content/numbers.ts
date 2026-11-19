@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, formula, h2, h3, ol, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const numbers: DocPage = {
   id: "numbers",
@@ -9,6 +10,7 @@ export const numbers: DocPage = {
     "把前两页的原则落到三条具体曲线上：怎么设计战斗、怎么安排成长、怎么给付费定价而不毁掉留存。",
   section: "设计",
   readingTime: "14 分钟",
+  i18n: translationsFor("numbers"),
   blocks: [
     p(
       "这三条曲线看起来是三份不同的工作，实际上共享同一套约束：相同的基准单位、加减法优先、明确的上下限、可复算的精确值。区别只在于它们优化的目标不同——战斗优化「对抗手感」，成长优化「投入与回报的节奏」，商业化优化「价值交换的可持续性」。",

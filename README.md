@@ -23,8 +23,10 @@ go run ./cmd/numgen examples/plan.json            # 生成战斗/成长/商业�
 go run ./cmd/numgen -formula 'base*1.2^level' examples/plan.json  # 指数公式守卫
 go run ./cmd/econcheck examples/econ.json         # source/sink 平衡 (~1)
 go run ./cmd/judge -values examples/gacha.json    # 给 AI 的版本判断包
-go run ./cmd/htmlreport examples/report.json dashboard.html  # Vercel 风格专业报告
-go run ./cmd/proanalysis -workers 16 -repeat 20    # 满级时间 + 并行敏感度 + 配表分析
+go run ./cmd/htmlreport examples/report.json dashboard.html  # Vercel 风格专业报告（默认中文）
+go run ./cmd/htmlreport -lang en examples/report.json report-en.html  # 英文
+go run ./cmd/proanalysis -workers 16 -repeat 20    # 满级时间 + 并行敏感度 + 配表分析（默认中文）
+go run ./cmd/proanalysis -lang ja -workers 16      # 日文
 go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
 ```
 
@@ -118,6 +120,14 @@ go vet ./...
 go test -count=1 ./...
 # docs-site: cd docs-site; npm install; npm run build
 ```
+
+## 多语言（中文优先）
+
+中文是权威主语言，也是 CLI 与文档站的默认语言（即使系统 locale 不是中文）。
+英文与日文为可选切换：`-lang zh|en|ja`（`i18n.Parse` 对未知 locale 一律回退到中文）。
+文档站顶栏有 `中文 / EN / 日本語` 切换器，默认中文并记忆选择。数值与指标 key
+（如 `retention_d1`）永不翻译，只翻译标签与说明。详见
+`skills/game-long-term-operation/references/i18n.md`。
 
 ## 文档站
 

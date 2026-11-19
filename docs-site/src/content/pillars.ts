@@ -1,5 +1,6 @@
 import type { DocPage } from "../types";
 import { callout, code, formula, h2, h3, ol, p, table, ul } from "../types";
+import { translationsFor } from "./i18n";
 
 export const pillars: DocPage = {
   id: "pillars",
@@ -8,6 +9,7 @@ export const pillars: DocPage = {
   subtitle: "描述一个游戏，只需要一组通用的观测值。品类不改指标，只改每个指标的容差带和权重。",
   section: "运营",
   readingTime: "14 分钟",
+  i18n: translationsFor("pillars"),
   blocks: [
     h2("一、为什么是指标，而不是功能清单"),
     p(
