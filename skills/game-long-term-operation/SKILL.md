@@ -136,21 +136,45 @@ with `go run ./cmd/judge -values examples/gacha.json -base 金币` (exact top
 deviations, config outliers, copyable AI prompt). Workflow + prompt:
 `references/ai-design-workflow.md`.
 
-## Executive HTML dashboard (for bosses / non-numerical readers)
+## Time-to-cap & parallel professional analysis
 
-Generate a self-contained HTML file (inline CSS + SVG, no external assets —
-safe to email or open offline) that explains the same exact analysis in plain
-language: big health gauge, five pillar cards, traffic-light metric table,
-a "where the money flows" diagram, an additive-vs-multiplicative chart, and a
-"three decisions for the boss" list.
+For the **lead numerical designer**, answer "how long until a normal player hits
+max level" with exact arithmetic and player cohorts:
+
+- total XP = `Σ base+step·(l−1)`; daily XP = time-budgeted activity XP × efficiency;
+  days = exact fraction; **P50 of weighted archetypes is the normal player**.
+- adjust with D1/D7/D30 survival: a low `SurvivalAtCap` means the cap is
+  effectively unreachable, not a success.
+- run hundreds/thousands of scenarios in parallel, deterministically, and scan
+  config tables concurrently.
+
+```sh
+go run ./cmd/proanalysis -spec examples/proanalysis.json -workers 16 -repeat 20
+```
+
+Full production method, QA checklist and chart conventions:
+`references/production-playbook.md`.
+
+## Vercel-style professional report & charts
+
+`cmd/htmlreport` emits a **self-contained Vercel-styled** HTML document for
+designers: monochrome (`#000`/`#fff`/`#eaeaea`), single accent `#0070f3`,
+Geist/Inter stack, monospace numbers, hairline borders, no gradients. It shows
+exact fractions, the fitness formula, dense metric tables, source/sink flow and
+the additive growth chart. Zero external URLs/scripts — offline/email safe.
 
 ```sh
 go run ./cmd/htmlreport examples/report.json report.html
 ```
 
-Spec = genre + string values + optional base unit, rates, economy sources/sinks
-and design plan. See `examples/report.json`. When presenting to non-experts,
-use this dashboard instead of raw tables; never show float math as "precise".
+The docs site adds **React Flow** (interactive value-flow + system-causal
+diagrams) and **ECharts** (growth comparison, time-to-cap percentiles, Sankey,
+sensitivity heatmap, config outlier scatter). Charts are instruments: legends,
+axes, tooltips and exact values; compute with `num.Num`, convert only at the
+rendering boundary. Do not substitute an arbitrary chart library on preference:
+use the provided ones; a different library is acceptable only if it satisfies
+every invariant above (exact-source numbers, legends/axes/tooltips, zero
+external assets). There is no fast-path or deadline waiver for any of this.
 
 ## Flow (心流) analysis with codegraph233 — optional, slower, NOT tested here
 
@@ -200,10 +224,14 @@ Details and manual paths: `references/installation.md`.
 | Closed genre enum | Levers + open `genre.Register` |
 | Hardcoded numbers in logic | Data-driven curves + validator; agent owns the numbers |
 | Loading all config files into RAM | Bounded streaming `ingest.Scan` |
+| Judging "normal player" by the mean | Weighted P50 of archetypes; report survival at cap |
+| Charting float results as if exact | Compute with `num.Num`; convert only at render |
+| Non-deterministic parallel results | Index-addressed result slice, fixed worker semantics |
 | Trusting numbers alone on lifespan | Report leading indicators + their limits |
 
 ## References
 
+- `references/production-playbook.md` — time-to-cap, parallel scale, QA, Vercel/ECharts
 - `references/unified-theory.md` — 大道归一, lifespan, additive-first, pitfalls
 - `references/normalization.md` — unit value, exchange rates
 - `references/ai-design-workflow.md` — agent designs all numbers, 1M files, codegraph233

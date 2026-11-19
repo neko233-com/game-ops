@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { getPage, groupedPages, neighbours, pages } from "./content";
 import { FlowBlock } from "./flow/FlowDiagrams";
+
+// ECharts is large: load it only on the professional analytics page so the main
+// bundle stays small (no >500 kB chunk warning in production builds).
+const EChartsBlock = lazy(() =>
+  import("./charts/ProCharts").then((m) => ({ default: m.EChartsBlock })),
+);
 import type { Block, DocPage, Tone } from "./types";
 
 const toneLabels: Record<Tone, string> = {
@@ -164,6 +170,12 @@ function BlockView({ block, index }: { block: Block; index: number }) {
       );
     case "flow":
       return <FlowBlock diagram={block.diagram} />;
+    case "echarts":
+      return (
+        <Suspense fallback={<div className="chart-loading">加载图表…</div>}>
+          <EChartsBlock chart={block.chart} />
+        </Suspense>
+      );
   }
 }
 

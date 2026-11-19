@@ -1,0 +1,19 @@
+{
+  "title": "满级节奏与配表专业分析（数值主策划）",
+  "baseUnit": "金币",
+  "maxLevel": 60,
+  "xpCurve": { "name": "xp", "base": "100", "step": "20", "cap": "0" },
+  "activities": [
+    { "name": "主线", "xpPerMinute": "10", "dailyCapMinutes": 60 },
+    { "name": "日常", "xpPerMinute": "5", "dailyCapMinutes": 60 }
+  ],
+  "archetypes": [
+    { "name": "常规", "minutesPerDay": 120, "efficiency": "1",   "weight": "6/10", "retentionD1": "0.44", "retentionD7": "0.19", "retentionD30": "0.09" },
+    { "name": "轻度", "minutesPerDay": 60,  "efficiency": "4/5", "weight": "3/10", "retentionD1": "0.35", "retentionD7": "0.14", "retentionD30": "0.06" },
+    { "name": "重度", "minutesPerDay": 240, "efficiency": "6/5", "weight": "1/10", "retentionD1": "0.55", "retentionD7": "0.28", "retentionD30": "0.15" }
+  ],
+  "sensitivity": {
+    "steps": ["16", "18", "20", "22", "24"],
+    "maxLevels": [50, 60, 70]
+  }
+}

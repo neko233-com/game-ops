@@ -36,6 +36,22 @@ numerical-design system:
   explicitly excluded from this repo's verification.
 - Docs site lives at `docs-site/` inside the same repo (so "clone → README → use").
 
+## Professional pivot (lead numerical designer)
+
+The audience was corrected from "bosses" to **数值主策划**. Added:
+- `progression`: exact time-to-cap with archetypes, daily time budgets, D1/D7/D30
+  survival adjustment, weighted P10–P90, and deterministic parallel `Batch`.
+- `cmd/proanalysis`: concurrent scenario batch + config scan, `-workers`,
+  `-repeat` stress grid, dense Markdown report with exact fractions and
+  sensitivity table. Fixed a map-order tie-break so results are identical at
+  worker counts 1 and 32 (verified).
+- HTML report restyled to **Vercel design language** (monochrome, hairline
+  borders, Geist/Inter, monospace numbers, `#0070f3` accent), with exact
+  fractions and formula text instead of boss narrative.
+- ECharts + React Flow in the docs site as designer instruments (not decoration).
+- `references/production-playbook.md` + full skill test suite (baseline,
+  with-skill, pressure) to prove the skill holds under production conditions.
+
 ## Final additions: executive communication
 
 - `report` + `cmd/htmlreport`: self-contained HTML dashboard (inline CSS/SVG,

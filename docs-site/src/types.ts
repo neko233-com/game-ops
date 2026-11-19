@@ -17,12 +17,24 @@ export type Block =
   | { type: "formula"; expression: string; note?: string }
   | { type: "steps"; items: Array<{ title: string; text: string }> }
   | { type: "quote"; text: string; attribution?: string }
-  | { type: "flow"; diagram: FlowDiagram };
+  | { type: "flow"; diagram: FlowDiagram }
+  | { type: "echarts"; chart: ChartId };
 
 export type Tone = "note" | "tip" | "warn" | "danger";
 
 /** 交互式图解的类型：由 src/flow/FlowDiagrams.tsx 渲染。 */
 export type FlowDiagram = "value-flow" | "system-map";
+
+/**
+ * 专业图表的稳定 id：由 src/charts/ProCharts.tsx 渲染。
+ * 每个 id 对应一份精确的 ECharts option（数值全部来自引擎 / 配表常量）。
+ */
+export type ChartId =
+  | "growth-curves"
+  | "capacity-days"
+  | "economy-sankey"
+  | "sensitivity-heatmap"
+  | "config-anomaly-scatter";
 
 export interface DocPage {
   /** URL hash 用的稳定 id，例如 #/overview */
@@ -78,3 +90,4 @@ export const quote = (text: string, attribution?: string): Block => ({
   attribution,
 });
 export const flow = (diagram: FlowDiagram): Block => ({ type: "flow", diagram });
+export const echart = (chart: ChartId): Block => ({ type: "echarts", chart });

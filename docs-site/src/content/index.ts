@@ -10,6 +10,7 @@ import { numbers } from "./numbers";
 import { aiNumbers } from "./ai-numbers";
 import { flow } from "./flow";
 import { install } from "./install";
+import { proAnalytics } from "./pro-analytics";
 
 export const pages: DocPage[] = [
   overview,
@@ -23,10 +24,11 @@ export const pages: DocPage[] = [
   aiNumbers,
   flow,
   install,
+  proAnalytics,
 ];
 
 /** 侧边栏分组顺序。未在列表里的分组按出现顺序排在末尾。 */
-export const sectionOrder = ["开始", "地基", "图解", "运营", "设计", "AI", "安装"];
+export const sectionOrder = ["开始", "地基", "图解", "专业", "运营", "设计", "AI", "安装"];
 
 export function groupedPages(): Array<{ section: string; pages: DocPage[] }> {
   const groups = new Map<string, DocPage[]>();

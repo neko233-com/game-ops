@@ -23,7 +23,8 @@ go run ./cmd/numgen examples/plan.json            # 生成战斗/成长/商业�
 go run ./cmd/numgen -formula 'base*1.2^level' examples/plan.json  # 指数公式守卫
 go run ./cmd/econcheck examples/econ.json         # source/sink 平衡 (~1)
 go run ./cmd/judge -values examples/gacha.json    # 给 AI 的版本判断包
-go run ./cmd/htmlreport examples/report.json dashboard.html  # 老板版 HTML 仪表盘
+go run ./cmd/htmlreport examples/report.json dashboard.html  # Vercel 风格专业报告
+go run ./cmd/proanalysis -workers 16 -repeat 20    # 满级时间 + 并行敏感度 + 配表分析
 go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
 ```
 
@@ -62,11 +63,13 @@ go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
 | `normalize` | 单位价值账本；精确换算与传递换算 |
 | `ingest` | 流式扫描 100 万 `.xlsx/.json/.jsonl/.csv/.tsv`（仅标准库） |
 | `design` | 加法优先的战斗/成长/商业化曲线 + 爆炸校验 |
-| `report` / `cmd/htmlreport` | 面向老板的**自包含 HTML 仪表盘**（内联 CSS+SVG，可离线/邮件） |
+| `progression` / `cmd/proanalysis` | 常规玩家满级时间（精确分数）、玩家分层加权 P50、D1/D7/D30 留存触达率、并行敏感度扫描、配表异常 |
+| `report` / `cmd/htmlreport` | **Vercel 风格**自包含 HTML 报告（黑白极简、等宽数字、内联 SVG，离线/邮件可用） |
 | `cmd/judge` | 给 AI 的版本判断包：精确偏差 + 配表异常 + 可复制 prompt |
 | `cmd/opsreport` / `cmd/normalize` / `cmd/numgen` / `cmd/econcheck` / `cmd/ingest` | 对应 CLI（健康报告 / 归一化 / 数值生成 / 经济平衡 / 配表摄取） |
 | `design.RejectGlobalExponent` | 拒绝任何全局指数公式（即使加了 cap） |
-| `docs-site/` 的 React Flow 页 | 价值流动图 + 系统关系图（可拖拽/缩放，给非数值读者） |
+| `docs-site/` 的 React Flow 页 | 价值流动图 + 系统关系图（可拖拽/缩放） |
+| `docs-site/` 的 ECharts 页 | 专业图表：成长对比、满级时间分位数、Sankey、敏感度热力图、配表异常散点 |
 
 ## 让 Agent 设计全部数值
 

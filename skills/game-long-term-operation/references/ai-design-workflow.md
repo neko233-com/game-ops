@@ -10,8 +10,10 @@ The agent is not limited to *reviewing* numbers. It designs **all** of them:
 
 For each it writes data-driven curves (never magic numbers in logic), runs the
 validator, and explains every choice in the value/flow/pacing language of the
-unified theory. Human taste can override, but the agent produces the complete
-first draft and the exact rationale.
+unified theory. Human taste can override **data parameters** (curve constants, band widths,
+target values), but the agent produces the complete first draft and the exact
+rationale. "Human override" never covers the method itself: no float64, no
+global exponent, no skipped validation, no committed test files.
 
 ### Design procedure
 
