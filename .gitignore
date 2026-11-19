@@ -1,0 +1,25 @@
+# ---------------------------------------------------------------------------
+# Test content must NEVER be pulled by others.
+# Everything matching these rules stays local and is never committed/pushed.
+# ---------------------------------------------------------------------------
+*_test.go
+/tests/
+**/testdata/
+*.test
+coverage.out
+coverage.html
+
+# Go build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+/bin/
+/dist/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

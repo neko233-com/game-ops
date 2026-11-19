@@ -1,0 +1,16 @@
+{
+  "genre": "gacha",
+  "values": {
+    "retention_d1": "0.44",
+    "retention_d7": "0.19",
+    "retention_d30": "0.09",
+    "economy_source_sink_ratio": "1.05",
+    "economy_inflation": "1.02",
+    "monetization_pay_rate": "0.055",
+    "monetization_arpu": "1.20",
+    "monetization_ltv": "9",
+    "progression_pace": "1.10",
+    "content_cadence_days": "14",
+    "content_debt_ratio": "1.15"
+  }
+}
