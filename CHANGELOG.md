@@ -6,6 +6,8 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [1.0.0] - 2026-11-20
 
+**发布**: GitHub Release https://github.com/neko233-com/game-ops/releases/tag/v1.0.0 (8 assets) · 在线文档 https://game-ops-docs.app.workbuddy.host/?sharecode=HVGNGJMBVJ
+
 ### Added
 - **Single production binary `gameops`**: all 15 capabilities in one statically-linked
   Go binary; 6 platforms (Windows/Linux/macOS × amd64/arm64); SHA256SUMS + version.json.
