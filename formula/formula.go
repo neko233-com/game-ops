@@ -16,7 +16,7 @@ import (
 	"math/big"
 	"unicode"
 
-	"github.com/neko233/game-ops/num"
+	"github.com/neko233-com/game-ops/num"
 )
 
 type tokenKind int

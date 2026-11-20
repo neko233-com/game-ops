@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/neko233/game-ops/num"
+	"github.com/neko233-com/game-ops/num"
 )
 
 // Unit is a kind of value in the game economy.

@@ -13,11 +13,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/neko233/game-ops/design"
-	"github.com/neko233/game-ops/i18n"
-	"github.com/neko233/game-ops/ingest"
-	"github.com/neko233/game-ops/num"
-	"github.com/neko233/game-ops/progression"
+	"github.com/neko233-com/game-ops/design"
+	"github.com/neko233-com/game-ops/i18n"
+	"github.com/neko233-com/game-ops/ingest"
+	"github.com/neko233-com/game-ops/num"
+	"github.com/neko233-com/game-ops/progression"
 )
 
 type activityJSON struct {

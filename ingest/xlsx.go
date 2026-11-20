@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/neko233/game-ops/num"
+	"github.com/neko233-com/game-ops/num"
 )
 
 type xlsxSST struct {

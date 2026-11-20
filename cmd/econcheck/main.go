@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/neko233/game-ops/num"
+	"github.com/neko233-com/game-ops/num"
 )
 
 type spec struct {

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/neko233/game-ops/num"
+	"github.com/neko233-com/game-ops/num"
 )
 
 const maxFileCeiling = 1_000_000

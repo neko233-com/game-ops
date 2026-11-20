@@ -11,11 +11,11 @@ import (
 	"sort"
 	"time"
 
-	"github.com/neko233/game-ops/design"
-	"github.com/neko233/game-ops/genre"
-	"github.com/neko233/game-ops/i18n"
-	"github.com/neko233/game-ops/num"
-	"github.com/neko233/game-ops/ops"
+	"github.com/neko233-com/game-ops/design"
+	"github.com/neko233-com/game-ops/genre"
+	"github.com/neko233-com/game-ops/i18n"
+	"github.com/neko233-com/game-ops/num"
+	"github.com/neko233-com/game-ops/ops"
 )
 
 // Spec is the input to Build. Numbers are strings to preserve precision.

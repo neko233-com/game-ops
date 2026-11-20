@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/neko233/game-ops/i18n"
-	"github.com/neko233/game-ops/report"
+	"github.com/neko233-com/game-ops/i18n"
+	"github.com/neko233-com/game-ops/report"
 )
 
 func main() {

@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/neko233/game-ops/ingest"
+	"github.com/neko233-com/game-ops/ingest"
 )
 
 func main() {

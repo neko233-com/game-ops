@@ -9,8 +9,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/neko233/game-ops/genre"
-	"github.com/neko233/game-ops/num"
+	"github.com/neko233-com/game-ops/genre"
+	"github.com/neko233-com/game-ops/num"
 )
 
 // Snapshot is one observation of a live game's operation metrics.

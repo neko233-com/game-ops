@@ -10,10 +10,10 @@ import (
 	"os"
 	"sort"
 
-	"github.com/neko233/game-ops/genre"
-	"github.com/neko233/game-ops/ingest"
-	"github.com/neko233/game-ops/num"
-	"github.com/neko233/game-ops/ops"
+	"github.com/neko233-com/game-ops/genre"
+	"github.com/neko233-com/game-ops/ingest"
+	"github.com/neko233-com/game-ops/num"
+	"github.com/neko233-com/game-ops/ops"
 )
 
 type valuesFile struct {

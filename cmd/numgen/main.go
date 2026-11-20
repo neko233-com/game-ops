@@ -9,8 +9,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/neko233/game-ops/design"
-	"github.com/neko233/game-ops/num"
+	"github.com/neko233-com/game-ops/design"
+	"github.com/neko233-com/game-ops/num"
 )
 
 type curveSpec struct {

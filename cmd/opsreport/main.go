@@ -9,8 +9,8 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"github.com/neko233/game-ops/num"
-	"github.com/neko233/game-ops/ops"
+	"github.com/neko233-com/game-ops/num"
+	"github.com/neko233-com/game-ops/ops"
 )
 
 type config struct {
