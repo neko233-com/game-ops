@@ -1,0 +1,8 @@
+{
+  "values": {
+    "retention_d1": "0.32",
+    "adIntensity": "6",
+    "iapMix": "0.75",
+    "sessionLength": "3"
+  }
+}

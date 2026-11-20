@@ -35,6 +35,8 @@ Registered genres:
 			fmt.Fprintf(os.Stderr, "  %s\n", id)
 		}
 	}
+	// Top-level flag.Parse below handles the first arg ("run"|"show"|"list").
+	// The "run" subcommand uses its own flag.NewFlagSet for region/values/unit.
 	flag.Parse()
 
 	if flag.NArg() == 0 {
@@ -97,14 +99,18 @@ Registered genres:
 		}
 		id := flag.Arg(1)
 
+		// Sub-flags after "run <genre>" — not parsed by the top-level flag.
+		subArgs := flag.Args()[2:]
+		subFS := flag.NewFlagSet("run", flag.ExitOnError)
+		subFS.SetOutput(os.Stderr)
 		var (
-			regionStr = flag.String("region", "GLOBAL", "CN | SEA | US | EU | GLOBAL")
-			values    = flag.String("values", "", "JSON file of observed metric values")
-			unit      = flag.String("unit", "金币", "base unit label")
+			subRegion = subFS.String("region", "GLOBAL", "CN | SEA | US | EU | GLOBAL")
+			subValues = subFS.String("values", "", "JSON file of observed metric values")
+			subUnit   = subFS.String("unit", "金币", "base unit label")
 		)
-		// need to parse flags before args — re-parse.
-		// Simpler: manually collect remaining non-flag args.
-		// Since we already called flag.Parse, these are set via -region etc.
+		if err := subFS.Parse(subArgs); err != nil {
+			os.Exit(2)
+		}
 
 		s, ok := factory.Get(id)
 		if !ok {
@@ -114,13 +120,13 @@ Registered genres:
 
 		ctx := factory.StrategyContext{
 			GenreID:  id,
-			Region:   factory.Region(*regionStr),
-			BaseUnit: *unit,
+			Region:   factory.Region(*subRegion),
+			BaseUnit: *subUnit,
 			Metrics:  map[string]num.Num{},
 		}
 
-		if *values != "" {
-			b, err := os.ReadFile(*values)
+		if *subValues != "" {
+			b, err := os.ReadFile(*subValues)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "read: %v\n", err)
 				os.Exit(2)

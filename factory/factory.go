@@ -100,6 +100,27 @@ type MetricLabel struct {
 	Desc  string
 }
 
+// RegionAdvice is a region-specific advice line embedded in generated strategy files.
+type RegionAdvice struct {
+	Region string // "CN" | "SEA" | "US" | "EU" | "GLOBAL"
+	Advice string
+}
+
+// ThresholdTableKey is one row in a region-aware threshold table.
+// All values are strings so the generated code can render them verbatim
+// without worrying about zero values; "" means "not applicable / skip".
+type ThresholdTableKey struct {
+	MinLow  string
+	Min     string
+	IdealLo string
+	IdealHi string
+	Max     string
+	MaxHigh string
+	MsgLow  string
+	MsgHigh string
+	Unit    string
+}
+
 var registry = map[string]Strategy{}
 
 // Register adds a strategy. Safe to call from init.
