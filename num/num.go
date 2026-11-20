@@ -8,6 +8,7 @@ package num
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 )
@@ -215,4 +216,170 @@ func Sum(values ...Num) Num {
 		total = total.Add(v)
 	}
 	return total
+}
+
+// Product multiplies all operands, returning 1 for no operands.
+func Product(values ...Num) Num {
+	total := One()
+	for _, v := range values {
+		total = total.Mul(v)
+	}
+	return total
+}
+
+// Mean returns the arithmetic mean. Returns 0 for empty input.
+func Mean(values ...Num) Num {
+	if len(values) == 0 {
+		return Zero()
+	}
+	total := Sum(values...)
+	count := FromInt64(int64(len(values)))
+	out, _ := total.Div(count)
+	return out
+}
+
+// Variance returns the population variance (Σ(v-mean)² / n). Empty → 0.
+func Variance(values ...Num) Num {
+	if len(values) == 0 {
+		return Zero()
+	}
+	m := Mean(values...)
+	count := FromInt64(int64(len(values)))
+	sumSq := Zero()
+	for _, v := range values {
+		d := v.Sub(m)
+		sumSq = sumSq.Add(d.Mul(d))
+	}
+	out, _ := sumSq.Div(count)
+	return out
+}
+
+// Factorial returns n! exactly. n<0 returns 0.
+func Factorial(n int) Num {
+	if n < 0 {
+		return Zero()
+	}
+	result := One()
+	for i := int64(2); i <= int64(n); i++ {
+		result = result.Mul(FromInt64(i))
+	}
+	return result
+}
+
+// Comb returns the binomial coefficient C(n, k) exactly.
+// C(n,k) = n! / (k! (n-k)!). Returns 0 for out-of-range k.
+func Comb(n, k int) Num {
+	if k < 0 || k > n || n < 0 {
+		return Zero()
+	}
+	if k > n-k {
+		k = n - k
+	}
+	// Iterative: result = Π_{i=1}^{k} (n-k+i)/i
+	result := One()
+	for i := 1; i <= k; i++ {
+		mul, _ := FromInt64(int64(n - k + i)).Div(FromInt64(int64(i)))
+		result = result.Mul(mul)
+	}
+	return result
+}
+
+// Perm returns n!/(n-k)! exactly. Returns 0 for out-of-range k.
+func Perm(n, k int) Num {
+	if k < 0 || k > n || n < 0 {
+		return Zero()
+	}
+	result := One()
+	for i := 0; i < k; i++ {
+		result = result.Mul(FromInt64(int64(n - i)))
+	}
+	return result
+}
+
+// BinomialP returns P(X=k) for n Bernoulli trials with success probability p.
+// This is the exact form C(n,k) · p^k · (1-p)^{n-k}, used for gacha drop rates.
+func BinomialP(n, k int, p Num) Num {
+	if k < 0 || k > n || n < 0 {
+		return Zero()
+	}
+	c := Comb(n, k)
+	q := One().Sub(p)
+	return c.Mul(p.Pow(uint(k))).Mul(q.Pow(uint(n - k)))
+}
+
+// GeometricP returns P(X = k) — first success on trial k — with success rate p.
+// P(X=k) = (1-p)^{k-1} · p for k=1,2,3...
+func GeometricP(k int, p Num) Num {
+	if k < 1 || p.Sign() <= 0 || p.Cmp(One()) >= 0 {
+		return Zero()
+	}
+	q := One().Sub(p)
+	return q.Pow(uint(k - 1)).Mul(p)
+}
+
+// Median returns the middle value. Sorts a copy; does not mutate input.
+func Median(values ...Num) Num {
+	if len(values) == 0 {
+		return Zero()
+	}
+	sorted := make([]Num, len(values))
+	copy(sorted, values)
+	quickSort(sorted, 0, len(sorted)-1)
+	mid := len(sorted) / 2
+	if len(sorted)%2 == 1 {
+		return sorted[mid]
+	}
+	a, _ := sorted[mid-1].Add(sorted[mid]).Div(Two)
+	return a
+}
+
+// Percentile returns the p-th percentile (0 ≤ p ≤ 1) using linear
+// interpolation between the two nearest ranks. Empty → 0.
+func Percentile(p Num, values ...Num) Num {
+	if len(values) == 0 {
+		return Zero()
+	}
+	sorted := make([]Num, len(values))
+	copy(sorted, values)
+	quickSort(sorted, 0, len(sorted)-1)
+	if p.Cmp(Zero()) <= 0 {
+		return sorted[0]
+	}
+	if p.Cmp(One()) >= 0 {
+		return sorted[len(sorted)-1]
+	}
+	// rank = p * (n - 1), interpolate.
+	idx := p.Mul(FromInt64(int64(len(sorted) - 1))).Float64()
+	lo := int(idx)
+	hi := lo + 1
+	if hi >= len(sorted) {
+		return sorted[lo]
+	}
+	frac := idx - float64(lo)
+	f, _ := FromString(fmt.Sprintf("%g", frac))
+	return sorted[lo].Add(sorted[hi].Sub(sorted[lo]).Mul(f))
+}
+
+// Two is 2 as an exact Num. Kept here for convenience (vs. MustFromString).
+var Two = numTwo()
+
+func numTwo() Num { return FromInt64(2) }
+
+// quickSort is an in-place sort of []Num by exact comparison.
+func quickSort(a []Num, lo, hi int) {
+	if lo >= hi {
+		return
+	}
+	pivot := a[hi]
+	i := lo - 1
+	for j := lo; j < hi; j++ {
+		if a[j].Cmp(pivot) <= 0 {
+			i++
+			a[i], a[j] = a[j], a[i]
+		}
+	}
+	a[i+1], a[hi] = a[hi], a[i+1]
+	p := i + 1
+	quickSort(a, lo, p-1)
+	quickSort(a, p+1, hi)
 }

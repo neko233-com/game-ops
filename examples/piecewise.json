@@ -1,0 +1,10 @@
+{
+  "name": "xp",
+  "cap": "10000",
+  "maxLevel": 60,
+  "segments": [
+    {"start": 1,  "end": 10, "base": "100", "step": "10"},
+    {"start": 11, "end": 30, "base": "200", "step": "15"},
+    {"start": 31, "end": 60, "base": "500", "step": "20"}
+  ]
+}

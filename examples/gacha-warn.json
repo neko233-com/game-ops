@@ -1,0 +1,18 @@
+{
+  "title": "关注指标示例",
+  "subtitle": "两项指标越过 ideal band",
+  "genre": "gacha",
+  "values": {
+    "retention_d1": "0.42",
+    "retention_d7": "0.18",
+    "retention_d30": "0.08",
+    "economy_source_sink_ratio": "0.95",
+    "economy_inflation": "0.98",
+    "monetization_pay_rate": "0.02",
+    "monetization_arpu": "0.4",
+    "monetization_ltv": "0.9",
+    "progression_pace": "1.7",
+    "content_cadence_days": "14",
+    "content_debt_ratio": "1.2"
+  }
+}

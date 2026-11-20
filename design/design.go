@@ -43,6 +43,137 @@ func (c Curve) At(level uint) num.Num {
 	return v
 }
 
+// AtMany returns values at every level in [lo, hi] inclusive.
+func (c Curve) AtMany(lo, hi uint) []num.Num {
+	if lo > hi {
+		return nil
+	}
+	out := make([]num.Num, hi-lo+1)
+	for i := lo; i <= hi; i++ {
+		out[i-lo] = c.At(i)
+	}
+	return out
+}
+
+// Total returns Σ_{l=1}^{levels} c.At(l) — the accumulated value over
+// a range of levels. Levels below 1 returns 0.
+func (c Curve) Total(levels uint) num.Num {
+	if levels == 0 {
+		return zero
+	}
+	total := zero
+	for l := uint(1); l <= levels; l++ {
+		total = total.Add(c.At(l))
+	}
+	return total
+}
+
+// PieceSegment is one additive band in a piecewise curve.
+// A piecewise curve is the ONLY legitimate replacement for a global
+// exponent: each band is additive within its range, and the boundaries
+// are where design intent changes.
+type PieceSegment struct {
+	Start uint
+	End   uint
+	Base  num.Num
+	Step  num.Num
+}
+
+// PiecewiseCurve is a sequence of additive bands. Gaps or overlaps are
+// detected at build time. No piece may be empty.
+type PiecewiseCurve struct {
+	Name     string
+	Segments []PieceSegment
+	Cap      num.Num
+}
+
+// AdditivePiecewise wraps one or more additive curves as a piecewise curve.
+// Each Curve segment must not be capped (Cap==0) — the outer Cap handles that.
+func AdditivePiecewise(name string, cap string, segs ...PieceSegment) PiecewiseCurve {
+	return PiecewiseCurve{
+		Name:     name,
+		Cap:      num.MustFromString(cap),
+		Segments: segs,
+	}
+}
+
+// PieceBuilder builds PieceSegments from string parameters fluently.
+func Piece(start, end uint, base, step string) PieceSegment {
+	return PieceSegment{
+		Start: start, End: end,
+		Base: num.MustFromString(base), Step: num.MustFromString(step),
+	}
+}
+
+// At evaluates the piecewise curve at level. Levels before the first segment
+// are extrapolated linearly from the first segment's base/step. Levels after
+// the last segment use the last segment's step from its final base.
+func (p PiecewiseCurve) At(level uint) num.Num {
+	if len(p.Segments) == 0 {
+		return zero
+	}
+	if level < p.Segments[0].Start {
+		seg := p.Segments[0]
+		// Extrapolate linearly backward using seg.Base as value at seg.Start.
+		v := seg.Base.Sub(seg.Step.Mul(num.FromInt64(int64(seg.Start - level))))
+		return clamp(v, p.Cap)
+	}
+	var v num.Num
+	for _, seg := range p.Segments {
+		if level >= seg.Start && level <= seg.End {
+			offset := num.FromInt64(int64(level - seg.Start))
+			v = seg.Base.Add(seg.Step.Mul(offset))
+			return clamp(v, p.Cap)
+		}
+	}
+	// Past last segment: use last segment's final base + last segment step.
+	last := p.Segments[len(p.Segments)-1]
+	offset := num.FromInt64(int64(level - last.End))
+	final := last.Base.Add(last.Step.Mul(num.FromInt64(int64(last.End - last.Start))))
+	v = final.Add(last.Step.Mul(offset))
+	return clamp(v, p.Cap)
+}
+
+// ValidatePiece checks that segment ranges partition [1,cap] cleanly and
+// that each segment's base/step is non-negative.
+func (p PiecewiseCurve) ValidatePiece() []Issue {
+	var issues []Issue
+	if len(p.Segments) == 0 {
+		return []Issue{{"error", p.Name, "piecewise curve has no segments"}}
+	}
+	for i, seg := range p.Segments {
+		if seg.End < seg.Start {
+			issues = append(issues, Issue{"error", p.Name,
+				fmt.Sprintf("segment %d end (%d) < start (%d)", i, seg.End, seg.Start)})
+		}
+		if seg.Base.Sign() <= 0 {
+			issues = append(issues, Issue{"error", p.Name,
+				fmt.Sprintf("segment %d base must be positive", i)})
+		}
+		if seg.Step.Sign() < 0 {
+			issues = append(issues, Issue{"error", p.Name,
+				fmt.Sprintf("segment %d step is negative", i)})
+		}
+	}
+	// Check adjacency.
+	for i := 1; i < len(p.Segments); i++ {
+		prev, cur := p.Segments[i-1], p.Segments[i]
+		if cur.Start != prev.End+1 {
+			issues = append(issues, Issue{"warn", p.Name,
+				fmt.Sprintf("gap or overlap between segment %d end %d and segment %d start %d",
+					i-1, prev.End, i, cur.Start)})
+		}
+	}
+	return issues
+}
+
+func clamp(v, cap num.Num) num.Num {
+	if cap.Sign() > 0 && v.Cmp(cap) > 0 {
+		return cap
+	}
+	return v
+}
+
 // Plan bundles the standard curves used across combat, growth and monetization.
 type Plan struct {
 	Name        string

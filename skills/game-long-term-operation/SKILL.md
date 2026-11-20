@@ -92,13 +92,89 @@ verdict `healthy >= 0.8`, `attention >= 0.6`, else `critical`. Full definitions:
 CLI (values are strings in JSON, so precision survives — see `examples/gacha.json`):
 
 ```sh
-go run ./cmd/opsreport examples/gacha.json     # score + verdict + diagnostics
-go run ./cmd/econcheck examples/econ.json      # source/sink balance (~1)
+# --- 长线运营健康 ---
+go run ./cmd/opsreport examples/gacha.json           # score + verdict + diagnostics
+go run ./cmd/opsreport examples/gacha-warn.json      # attention 级（示例）
+go run ./cmd/econcheck examples/econ.json            # source/sink balance (~1)
+
+# --- 数值生成与校验 ---
+go run ./cmd/numgen examples/plan.json               # 加法优先曲线
+go run ./cmd/numgen -formula 'base*1.2^level' examples/plan.json  # 指数守卫 → exit 1
+go run ./cmd/curve examples/piecewise.json           # 多段加法曲线（见 references/piecewise.md）
+go run ./cmd/curve example                           # 打印推荐默认值
+
+# --- 精确计算 ---
+go run ./cmd/formula '2^3^2'                         # 表达式求值 → 512
+go run ./cmd/formula -expr 'a+b*c' -vars 'a=1,b=2,c=3'
+go run ./cmd/numcalc '1/3 + 2/7'                     # → 13/21
+go run ./cmd/numcalc comb 10 3                        # C(10,3) = 120
+go run ./cmd/numcalc binom 10 3 0.06                  # 精确概率 C(10,3)·0.06³·0.94⁷
+go run ./cmd/numcalc geom 80 0.006                    # 第 k 次才首次成功的概率（保底 SSR）
+go run ./cmd/numcalc mean 10 20 30                    # mean / median / variance / pXX
+
+# --- Query & 行业品类 ---
+go run ./cmd/genre list                              # 29 内置品类
+go run ./cmd/genre show gacha                        # gacha 的 11 项 lever 理想值
+go run ./cmd/genre metrics                           # 11 个通用指标定义
+
+# --- 版本判断 & 摄取 ---
+go run ./cmd/judge -values examples/gacha.json        # 给 AI 的版本判断包
+go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
+go run ./cmd/proanalysis -spec examples/proanalysis.json -workers 16 -repeat 20
+go run ./cmd/htmlreport examples/report.json dashboard.html
 ```
 
 `econcheck` sums `sources` and `sinks` maps of string values and reports the exact
 ratio; >1.1 inflation, <0.9 scarcity, otherwise balanced. Specify every metric
 key of the genre's levers in `Values`; a missing key is an error, not zero.
+
+## Multi-segment piecewise additive (多段加法)
+
+When pure `base + step·(n-1)` looks too flat at high levels and a capped
+exponential is forbidden, the ONLY correct design is **piecewise additive
+curves** — each range `[start, end]` has its own `base + step·(n-start)` with
+an optional global hard cap. Every boundary is explicit design intent, not
+hidden compounding. Full rules and why it replaces exponential:
+`references/piecewise.md`.
+
+```go
+pw := design.AdditivePiecewise("xp", "10000",
+    design.Piece(1, 10, "100", "10"),
+    design.Piece(11, 30, "200", "15"),
+    design.Piece(31, 60, "500", "20"),
+)
+```
+
+## Probability & gacha math（抽卡概率 / 组合数学）
+
+Any random system — gacha, drop rate, crit, skill proc — must use **exact
+rational** probability (`float64` drifts after repeated products). The engine
+provides `num.BinomialP`, `num.GeometricP`, `num.Comb`, `num.Perm`,
+`num.Factorial`, and `numcalc` CLI. Full formulas and examples:
+`references/probability.md`.
+
+```sh
+# 80 抽保底 SSR（掉率 0.6%）恰好第 80 抽时才首次命中的概率
+go run ./cmd/numcalc geom 80 0.006
+# 10 次独立 3% 暴击至少命中 2 次
+go run ./cmd/numcalc binom 10 0 0.03
+go run ./cmd/numcalc binom 10 1 0.03
+# 期望值 E = Σ k·geom(k,p), 用 numcalc 累加
+```
+
+## Universal genre levers（29 built-in + open Register）
+
+The engine ships with 29 genre presets covering gacha, RPG, MMO, MOBA, FPS,
+SLG, casual, match-3, tower-defense, visual-novel, rhythm, and more. Each
+genre customizes ideal values, tolerance bands and weights for the 11
+universal metrics. Open `genre.Register` lets you add ANY genre including
+future ones — not a closed enum.
+
+```sh
+go run ./cmd/genre list                    # 29 IDs
+go run ./cmd/genre show slg                # slg 的完整 11 项 lever 表
+go run ./cmd/genre metrics                 # 11 个通用指标定义
+```
 
 ## Combat / growth / monetization numbers
 
@@ -248,3 +324,5 @@ never translated; only labels and prose are. Details: `references/i18n.md`.
 - `references/metrics.md` — eleven metrics
 - `references/genres.md` — genre coverage
 - `references/installation.md` — multi-runtime install
+- `references/piecewise.md` — multi-segment additive curves (only legit alternative to exponential)
+- `references/probability.md` — gacha/drop-rate math, binomial/geometric, exact rational
