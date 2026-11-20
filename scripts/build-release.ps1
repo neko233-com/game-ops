@@ -30,19 +30,19 @@ if (Test-Path $out) { Remove-Item -Recurse -Force $out }
 New-Item -ItemType Directory -Force -Path $out | Out-Null
 
 $targets = @(
-  @{ os="windows"; arch="amd64"; bin="gameops.exe" },
-  @{ os="windows"; arch="arm64"; bin="gameops.exe" },
-  @{ os="linux";   arch="amd64"; bin="gameops" },
-  @{ os="linux";   arch="arm64"; bin="gameops" },
-  @{ os="darwin";  arch="amd64"; bin="gameops" },
-  @{ os="darwin";  arch="arm64"; bin="gameops" }
+  @{ os="windows"; arch="amd64" },
+  @{ os="windows"; arch="arm64" },
+  @{ os="linux";   arch="amd64" },
+  @{ os="linux";   arch="arm64" },
+  @{ os="darwin";  arch="amd64" },
+  @{ os="darwin";  arch="arm64" }
 )
 
 foreach ($t in $targets) {
-  $dir = Join-Path $out "$($t.os)-$($t.arch)"
-  New-Item -ItemType Directory -Force -Path $dir | Out-Null
-  $dest = Join-Path $dir $t.bin
-  Write-Host "  -> $($t.os)/$($t.arch)"
+  $ext = if ($t.os -eq "windows") { ".exe" } else { "" }
+  $bin = "gameops-$($t.os)-$($t.arch)$ext"
+  $dest = Join-Path $out $bin
+  Write-Host "  -> $bin"
   $env:CGO_ENABLED = "0"; $env:GOOS = $t.os; $env:GOARCH = $t.arch
   & go build -trimpath -ldflags $ldflags -o $dest ./cmd/gameops
   if ($LASTEXITCODE -ne 0) { throw "build failed for $($t.os)/$($t.arch)" }
@@ -51,13 +51,11 @@ Remove-Item Env:GOOS, Env:GOARCH -ErrorAction SilentlyContinue
 $env:CGO_ENABLED = "0"
 
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-# SHA256SUMS over every binary, sorted by relative path
-$sums = Get-ChildItem -Recurse -File $out | Where-Object { $_.Name -ne "SHA256SUMS" -and $_.Name -ne "version.json" } |
-  Sort-Object FullName | ForEach-Object {
-    $hash = (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower()
-    $rel = $_.FullName.Substring((Resolve-Path $out).Path.Length + 1).Replace("\", "/")
-    "$hash  $rel"
-  }
+# SHA256SUMS over the binaries, flat names matching GitHub Release assets
+$sums = Get-ChildItem -File $out -Filter "gameops-*" | Sort-Object Name | ForEach-Object {
+  $hash = (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower()
+  "$hash  $($_.Name)"
+}
 [System.IO.File]::WriteAllText((Join-Path $out "SHA256SUMS"), (($sums -join "`n") + "`n"), $utf8NoBom)
 
 $goVer = (& go version).Split()[2]
@@ -75,7 +73,7 @@ Write-Host "Verify: Get-Content $out/SHA256SUMS"
 
 if ($Install) {
   New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-  $src = Join-Path $out "windows-amd64/gameops.exe"
+  $src = Join-Path $out "gameops-windows-amd64.exe"
   Copy-Item -Force $src (Join-Path $InstallDir "gameops.exe")
   Write-Host "Installed: $InstallDir/gameops.exe"
   Write-Host "Add $InstallDir to PATH to run 'gameops' anywhere."

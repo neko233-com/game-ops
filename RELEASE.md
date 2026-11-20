@@ -8,14 +8,16 @@
 
 | 平台 | 路径 |
 |---|---|
-| Windows x64 | `windows-amd64/gameops.exe` |
-| Windows ARM64 | `windows-arm64/gameops.exe` |
-| Linux x64 | `linux-amd64/gameops` |
-| Linux ARM64 | `linux-arm64/gameops` |
-| macOS x64 | `darwin-amd64/gameops` |
-| macOS ARM64 (Apple Silicon) | `darwin-arm64/gameops` |
+| Windows x64 | `gameops-windows-amd64.exe` |
+| Windows ARM64 | `gameops-windows-arm64.exe` |
+| Linux x64 | `gameops-linux-amd64` |
+| Linux ARM64 | `gameops-linux-arm64` |
+| macOS x64 | `gameops-darwin-amd64` |
+| macOS ARM64 (Apple Silicon) | `gameops-darwin-arm64` |
 
-元数据：`version.json`（版本/commit/构建时间/Go 版本/目标列表）、`SHA256SUMS`（全部二进制校验和）。
+GitHub Release: https://github.com/neko233-com/game-ops/releases/tag/v1.0.0
+
+元数据：`version.json`（版本/commit/构建时间/Go 版本/目标列表）、`SHA256SUMS`（文件名与 Release asset 一致，可直接 `sha256sum -c`）。
 
 ## 校验完整性
 
@@ -43,7 +45,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1 -Install
 
 ```bash
 # macOS/Linux: 复制到 PATH 目录
-cp dist/v1.0.0/$(uname -s | tr A-Z a-z)-amd64/gameops /usr/local/bin/
+cp dist/v1.0.0/gameops-$(uname -s | tr A-Z a-z)-amd64 /usr/local/bin/gameops
 chmod +x /usr/local/bin/gameops
 ```
 
