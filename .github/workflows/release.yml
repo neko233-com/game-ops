@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify
+        env:
+          CGO_ENABLED: 0
+        run: |
+          go build ./...
+          go vet ./...
+          go test -count=1 ./...
+      - name: Build all platforms
+        env:
+          VERSION: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: bash scripts/build-release.sh
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          gh release create "$VERSION" \
+            --title "gameops $VERSION" \
+            --notes-file CHANGELOG.md \
+            dist/$VERSION/*/gameops* \
+            dist/$VERSION/SHA256SUMS \
+            dist/$VERSION/version.json

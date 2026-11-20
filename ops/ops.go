@@ -39,6 +39,23 @@ type Report struct {
 	Diagnostics []Diagnostic
 }
 
+// EvaluateAny scores a snapshot, auto-deriving a genre for any unknown ID.
+// This is the "support everything" entry point: a brand-new category with no
+// built-in preset and no registered strategy is still analysable immediately.
+// Missing metrics are filled from the derived levers' ideals, so callers can
+// pass a partial snapshot and still get a report.
+func EvaluateAny(s Snapshot) (Report, error) {
+	g := genre.GetAny(s.GenreID)
+	if len(s.Values) > 0 {
+		return Evaluate(Snapshot{GenreID: g.ID, Values: s.Values})
+	}
+	values := make(map[string]num.Num, len(g.Levers))
+	for _, l := range g.Levers {
+		values[l.Key] = l.Ideal
+	}
+	return Evaluate(Snapshot{GenreID: g.ID, Values: values})
+}
+
 var (
 	two       = num.MustFromString("2")
 	zero      = num.Zero()

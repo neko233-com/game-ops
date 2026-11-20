@@ -5,6 +5,16 @@ description: Use when designing, auditing, balancing or monetizing long-term gam
 
 # Game Long-Term Operation & Numerical Design (游戏长线运营 / 数值)
 
+## Production binary — single `gameops`
+
+All 15 capabilities ship in ONE statically-linked Go binary. Build with
+`scripts/build-release.sh` (or `.ps1`), 6 platforms, SHA256SUMS + version.json.
+Every `go run ./cmd/<name>` example in this SKILL also works as
+`gameops <name>` (e.g. `gameops opsreport examples/gacha.json`,
+`gameops boss brief gacha`, `gameops numcalc '1/3 + 2/7'`).
+`gameops version` prints version/commit/build-date/Go. Unknown command exit 1,
+panic exit 70. See `RELEASE.md`.
+
 ## The one principle (大道归一)
 
 > 数值的本质不是公式，而是**「价值的定义、流动与节奏」**。
@@ -117,6 +127,14 @@ go run ./cmd/genre list                              # 29 内置品类
 go run ./cmd/genre show gacha                        # gacha 的 11 项 lever 理想值
 go run ./cmd/genre metrics                           # 11 个通用指标定义
 
+# --- 开放品类目录（支持所有品类） ---
+go run ./cmd/catalog list
+go run ./cmd/catalog derive cozy-farming-sim -name 治愈农场 -tags cozy,farming -save g.json
+go run ./cmd/catalog register g.json
+go run ./cmd/catalog eval cozy-farming-sim
+go run ./cmd/catalog strategy cozy-farming-sim -region CN
+go run ./cmd/catalog export -out catalog.json
+
 # --- 版本判断 & 摄取 ---
 go run ./cmd/judge -values examples/gacha.json        # 给 AI 的版本判断包
 go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
@@ -161,6 +179,58 @@ go run ./cmd/numcalc binom 10 0 0.03
 go run ./cmd/numcalc binom 10 1 0.03
 # 期望值 E = Σ k·geom(k,p), 用 numcalc 累加
 ```
+
+## Boss decision center — 代替主策+运营，给老板用（ conclusions first ）
+
+When the user is a decision-maker (not a numerical specialist), do NOT dump
+metrics/formulas. Use the boss layer: verdict → sign-off items → instructions.
+
+```sh
+go run ./cmd/boss brief <genre> [-values f.json]       # GO/HOLD/STOP + top decisions
+go run ./cmd/boss decide <genre> [-values f.json] -html out.html  # full packet + cockpit
+go run ./cmd/boss monitor <genre> [-values f.json]     # traffic-light ops dashboard
+go run ./cmd/boss duty [-role 主策划|运营]               # 26-job duty matrix + standards
+go run ./cmd/boss simulate <genre> [-values f.json]    # now / fixed / ignored scenarios
+go run ./cmd/boss ask "gacha 这个版本能上吗"             # natural-language routing
+```
+
+Go API: `boss.Analyze(genreID, values, flags) -> Brief{Headline, Call, Findings,
+Decisions, Actions, Duties, Limits}`, `boss.DutyMatrix` (26 jobs), `boss.Translate`
+(key → plain language + 价值/流动/节奏 family). Unknown genres auto-derived — any
+category works. Findings are exact numbers translated to business language;
+each decision carries owner/deadline/options/if-not; limits state what numbers
+cannot judge (fun, social, creativity). Never present the boss with a raw metric
+table — always lead with the one-line verdict.
+
+## Open catalog — support EVERY genre (支持所有品类)
+
+The engine is **genre-agnostic by construction**: 11 universal metrics + a data-driven
+catalog. A category does NOT need a built-in preset or a generated Strategy to be
+analysable — unknown IDs are auto-derived from their name/tags (14 tag rules over
+the universal levers), registered at runtime, and dispatched to a universal
+fallback strategy. JSON specs let you override any lever without codegen or rebuild.
+
+```sh
+go run ./cmd/catalog list                                   # every registered genre
+go run ./cmd/catalog derive cozy-farming-sim -name 治愈农场 -tags cozy,farming -save g.json
+go run ./cmd/catalog register g.json                        # JSON Spec[] or single Spec
+go run ./cmd/catalog eval cozy-farming-sim                  # health report, any ID
+go run ./cmd/catalog strategy cozy-farming-sim -region CN   # universal fallback strategy
+go run ./cmd/catalog export -out catalog.json               # round-trippable full catalog
+```
+
+Go API:
+- `genre.Derive(id, name, tags) Genre` — build levers from tags, no registration.
+- `genre.GetAny(id) Genre` — get-or-derive-and-register (never fails).
+- `genre.Upsert / LoadFile / LoadDir / Export / ValidateSpec` — data-driven catalog.
+- `ops.EvaluateAny(Snapshot)` — score ANY category; partial snapshots OK.
+- `factory.GetAny / RunAny` — registered strategy, else universal strategy.
+- `genre.Register` (strict, duplicate errors) and `ops.Evaluate` (strict, unknown
+  errors) are kept unchanged for backward compatibility.
+
+Rules stayed intact: 11 metrics, exact `num.Num`, additive-first, open `genre.Register`.
+Only the **entry points** widened — nothing existing broke. `catalog export` output
+round-trips via `catalog register`. Each genre spec is pure JSON with string numbers.
 
 ## Universal genre levers（29 built-in + open Register）
 
@@ -316,6 +386,8 @@ never translated; only labels and prose are. Details: `references/i18n.md`.
 
 ## References
 
+- `references/boss-decision-center.md` — 老板决策中枢：六命令、Brief 结构、翻译表、26 项工作事务
+- `references/open-catalog.md` — 支持所有品类：派生规则、JSON spec、宽松/严格 API、通用兜底
 - `references/i18n.md` — Chinese-primary, CLI `-lang`, docs-site switcher
 - `references/production-playbook.md` — time-to-cap, parallel scale, QA, Vercel/ECharts
 - `references/unified-theory.md` — 大道归一, lifespan, additive-first, pitfalls

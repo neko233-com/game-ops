@@ -1,0 +1,91 @@
+[
+  {
+    "id": "cozy-farming-sim",
+    "name": "治愈农场模拟",
+    "tags": [
+      "cozy",
+      "farming",
+      "sim",
+      "life"
+    ],
+    "levers": [
+      {
+        "key": "retention_d1",
+        "ideal": "2/5",
+        "min": "3/20",
+        "max": "7/10",
+        "weight": "1"
+      },
+      {
+        "key": "retention_d7",
+        "ideal": "9/50",
+        "min": "1/20",
+        "max": "2/5",
+        "weight": "1"
+      },
+      {
+        "key": "retention_d30",
+        "ideal": "1/10",
+        "min": "1/50",
+        "max": "11/50",
+        "weight": "11/10"
+      },
+      {
+        "key": "economy_source_sink_ratio",
+        "ideal": "1",
+        "min": "4/5",
+        "max": "13/10",
+        "weight": "11/10"
+      },
+      {
+        "key": "economy_inflation",
+        "ideal": "1",
+        "min": "4/5",
+        "max": "13/10",
+        "weight": "1"
+      },
+      {
+        "key": "monetization_pay_rate",
+        "ideal": "3/100",
+        "min": "1/100",
+        "max": "3/20",
+        "weight": "1"
+      },
+      {
+        "key": "monetization_arpu",
+        "ideal": "1",
+        "min": "1/2",
+        "max": "3",
+        "weight": "4/5"
+      },
+      {
+        "key": "monetization_ltv",
+        "ideal": "5",
+        "min": "1",
+        "max": "20",
+        "weight": "4/5"
+      },
+      {
+        "key": "progression_pace",
+        "ideal": "1",
+        "min": "3/5",
+        "max": "8/5",
+        "weight": "4/5"
+      },
+      {
+        "key": "content_cadence_days",
+        "ideal": "30",
+        "min": "14",
+        "max": "90",
+        "weight": "7/10"
+      },
+      {
+        "key": "content_debt_ratio",
+        "ideal": "1",
+        "min": "1/2",
+        "max": "2",
+        "weight": "3/5"
+      }
+    ]
+  }
+]

@@ -3,6 +3,27 @@
 一个纯 Go（**Go 1.27，无 cgo，仅标准库**）的数值/长线运营引擎，外加一个跨运行时的
 Agent Skill。**复制本仓库 → 读本 README → 安装即用。**
 
+## 生产二进制（单一 gameops）
+
+15 个能力收敛到**一个静态二进制**，多平台交叉编译、版本可追溯、SHA256 校验：
+
+```powershell
+gameops version                       # 版本 / commit / 构建时间 / Go 版本
+gameops help                          # 15 个命令
+gameops boss brief gacha -values examples/gacha-warn.json
+gameops opsreport examples/gacha.json
+gameops numcalc '1/3 + 2/7'
+```
+
+```powershell
+# 构建 6 平台发布产物（dist/<version>/ 含 SHA256SUMS + version.json）
+powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1 -Version v1.0.0
+# macOS/Linux: bash scripts/build-release.sh
+# 本机安装到 ~/bin: 加 -Install
+```
+
+完整发布说明见 `RELEASE.md`。源码开发仍可用 `go run ./cmd/<name>`（命令已改为可导入包，行为一致）。
+
 ## 30 秒上手
 
 ```powershell
@@ -72,6 +93,41 @@ go run ./cmd/ingest -roots ./Config -max 1000000 -workers 16 > stats.json
 | `design.RejectGlobalExponent` | 拒绝任何全局指数公式（即使加了 cap） |
 | `docs-site/` 的 React Flow 页 | 价值流动图 + 系统关系图（可拖拽/缩放） |
 | `docs-site/` 的 ECharts 页 | 专业图表：成长对比、满级时间分位数、Sankey、敏感度热力图、配表异常散点 |
+
+## 老板决策中枢（代替主策 + 运营）
+
+面向决策者：**结论先行 → 需要拍板的事 → 执行指令**，不堆指标/公式。`boss` 层把 11 项精确指标翻译成经营语言，按价值/流动/节奏归因，自动给出 GO/HOLD/STOP、拍板项（含证据/选项/建议/后果/负责人/期限）、执行指令与验收标准，并覆盖主策 12 项 + 运营 14 项全部工作事务。
+
+```powershell
+go run ./cmd/boss brief gacha -values examples/gacha-warn.json          # 一页纸简报
+go run ./cmd/boss decide gacha -values examples/gacha-warn.json -html output/boss.html  # 完整决策包+驾驶舱
+go run ./cmd/boss monitor gacha -values examples/gacha-warn.json        # 运营红黄绿灯
+go run ./cmd/boss duty                                                  # 26 项工作事务矩阵
+go run ./cmd/boss simulate gacha -values examples/gacha-warn.json       # 现状/整改/恶化三情景
+go run ./cmd/boss ask "gacha 这个版本能上吗"                              # 自然语言入口
+```
+
+驾驶舱 HTML 自包含、可打印/邮件、零外部资源。数值为领先指标，不能替代趣味/社交/创意的人工判断——报告同时给出边界提醒。
+
+## 支持所有游戏品类（开放目录 / 零代码新增）
+
+29 个内置品类 + 数据驱动目录。**任意新品类无需写代码、无需生成、无需重编译**：
+未知 ID 会按名称/标签经 14 条规则从 11 项通用 lever 自动派生并即时注册，
+策略走通用兜底；JSON spec 可覆盖任意 lever。严格 API（`genre.Register` /
+`ops.Evaluate`）保持旧语义，宽松 API（`GetAny` / `EvaluateAny` / `RunAny`）负责"支持所有"。
+
+```powershell
+go run ./cmd/catalog list                                              # 全部品类
+go run ./cmd/catalog derive cozy-farming-sim -name 治愈农场 -tags cozy,farming,sim -save g.json
+go run ./cmd/catalog register g.json                                   # 注册 JSON spec
+go run ./cmd/catalog eval cozy-farming-sim [-values examples/gacha.json]
+go run ./cmd/catalog strategy cozy-farming-sim -region CN
+go run ./cmd/catalog export -out catalog/all-genres.json               # 导出可回灌
+```
+
+Go API：`genre.Derive` / `GetAny` / `Upsert` / `LoadFile` / `LoadDir` / `Export` /
+`ValidateSpec`，`ops.EvaluateAny`，`factory.GetAny` / `RunAny`。
+`catalog/*.json` 为示例 spec（含自动派生的 `cozy-farming-sim.json` 与全量导出）。
 
 ## 让 Agent 设计全部数值
 
